@@ -1,0 +1,37 @@
+---
+title: "Install EZAnim in Your Roblox Game"
+sidebarTitle: "Installation"
+description: "Get EZAnim from the Roblox Creator Store, insert it into your place with the Toolbox, and require it in your scripts in under two minutes."
+---
+
+EZAnim is published on the Roblox Creator Store as a free model, so you can add it to any place without copying source code manually. The steps below walk you through grabbing the asset, positioning the module correctly in your data model, and writing the one-line require that gives every script access to the library.
+
+<Steps>
+  <Step title="Get EZAnim from the Creator Store">
+    Open the [EZAnim Creator Store page](https://create.roblox.com/store/asset/133114641753550/EZAnim) in your browser and click **Get**. Sign in with your Roblox account if prompted. This saves the asset to your Roblox inventory at no cost.
+  </Step>
+  <Step title="Insert EZAnim via the Toolbox">
+    In Roblox Studio, open the **Toolbox** panel (`View → Toolbox`), switch to the **My Models** tab, and search for **EZAnim**. Click the result to insert the `ModuleScript` into your place. It will land in the `Workspace` by default.
+  </Step>
+  <Step title="Move the module to ReplicatedStorage">
+    In the **Explorer** panel, drag the EZAnim `ModuleScript` from `Workspace` into `ReplicatedStorage`. This makes the module accessible to both server `Script`s and client `LocalScript`s without any extra copies.
+
+    <Note>
+      EZAnim works on both the server (inside a `Script`) and the client (inside a `LocalScript`). Keeping it in `ReplicatedStorage` means you only ever maintain one copy of the module.
+    </Note>
+  </Step>
+  <Step title="Require EZAnim in your script">
+    Add the following line at the top of any `Script` or `LocalScript` where you want to use EZAnim:
+
+    ```lua title="ServerScriptService/AnimationController.lua"
+    local EZAnim = require(game.ReplicatedStorage.EZAnim)
+    ```
+
+    Once required, you have access to the full EZAnim API. Proceed to the Quickstart to initialise the module and play your first animation.
+  </Step>
+</Steps>
+
+```lua title="ServerScriptService/AnimationController.lua"
+-- Require EZAnim from ReplicatedStorage
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+```

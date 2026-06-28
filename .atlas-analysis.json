@@ -1,20 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "EZAnim",
+  "projectType": "sdk-library",
+  "projectName": "EZAnim",
+  "projectDescription": "A Roblox Luau animation library that simplifies loading, playing, queuing, and managing character animations across multiple models.",
   "theme": "almond",
-  "favicon": "https://media.brand.dev/35be7977-b11f-4110-9d17-cdbdbec7cadf.png",
-  "colors": {
-    "primary": "#848484",
-    "light": "#cbcbcb",
-    "dark": "#1a1a1a"
-  },
-  "navbar": {
-    "primary": {
-      "type": "button",
-      "label": "Get EZAnim",
-      "href": "https://create.roblox.com/store/asset/133114641753550/EZAnim"
-    }
-  },
+  "primaryColor": "#848484",
+  "lightColor": "#1a1a1a",
+  "darkColor": "#cbcbcb",
   "navigation": {
     "tabs": [
       {
@@ -102,5 +93,40 @@
         ]
       }
     ]
-  }
+  },
+  "keyFeatures": [
+    "Single-call animation playback with priority, speed, weight, and fade control",
+    "Animation queue system for sequential playback",
+    "Cross-fade transitions between animations",
+    "Pause and resume with preserved time position",
+    "Per-model and per-group animation tracking",
+    "Layer system (FullBody, UpperBody, LowerBody, Face)",
+    "State machine helpers for model state tracking",
+    "Physics ragdoll with automatic restore",
+    "Animation marker event callbacks",
+    "Automatic model cleanup on Destroying"
+  ],
+  "publicApiSurface": [
+    "EZAnim.init(Options)",
+    "EZAnim:play(Model, Id, Priority?, Looped?, Fade?, Speed?, Weight?, Layer?, Group?)",
+    "EZAnim:playOnce(...)",
+    "EZAnim:stop(Model, Id, FadeTime?)",
+    "EZAnim:stopAll(Model, FadeTime?)",
+    "EZAnim:pause(Model, Id)",
+    "EZAnim:resume(Model, Id)",
+    "EZAnim:crossFade(Model, From, To, FadeTime?)",
+    "EZAnim:queue(Model, AnimationList, Fade?, Speed?, Weight?)",
+    "EZAnim:setState(Model, State)",
+    "EZAnim:getState(Model)",
+    "EZAnim:setSpeed(Model, Id, Speed)",
+    "EZAnim:setWeight(Model, Id, Weight, Fade?)",
+    "EZAnim:setTime(Model, Id, TimePosition)",
+    "EZAnim:preload(Ids)",
+    "EZAnim:onStopped(Model, Id, Callback)",
+    "EZAnim:onEnded(Model, Id, Callback)",
+    "EZAnim:onMarker(Model, Id, Marker, Callback)",
+    "EZAnim:ragdoll(Model, Duration?)",
+    "EZAnim:unragdoll(Model)",
+    "EZAnim:tween(Model, Id, TargetSpeed?, TargetWeight?, Time?)"
+  ]
 }

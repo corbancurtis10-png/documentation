@@ -1,0 +1,82 @@
+---
+title: "EZAnim:onMarker() — Handle Animation Marker Events"
+sidebarTitle: "onMarker()"
+description: "Connect a callback that fires each time a named marker in the animation timeline is reached, perfect for syncing sounds and effects to specific frames."
+---
+
+`onMarker()` connects a callback to a named marker embedded in an animation track, firing every time the playhead crosses that marker during playback. Markers are created inside the **Roblox Animation Editor** — EZAnim simply listens for them by name. This makes `onMarker()` ideal for synchronising game events to specific frames without hard-coding time offsets: place a marker in the editor, then react to it in code. You can place multiple markers with the same name in a single animation, and the callback fires each time any one of them is reached. As with all connection-based APIs, store the returned `RBXScriptConnection` and call `:Disconnect()` when the listener is no longer needed.
+
+## Parameters
+
+<ParamField path="Model" type="Model" required>
+  The model whose loaded animation track contains the marker. This must be the
+  same model reference you passed to `:play()` when loading the track.
+</ParamField>
+
+<ParamField path="Id" type="string" required>
+  The name of the animation as registered in your EZAnim animation list. The
+  track must already be loaded on `Model` — if it is not found, the function
+  returns `nil`.
+</ParamField>
+
+<ParamField path="Marker" type="string" required>
+  The exact name of the marker as it was entered in the Roblox Animation Editor.
+  This value is case-sensitive.
+</ParamField>
+
+<ParamField path="Callback" type="(...any) -> ()" required>
+  The function to call each time the marker is reached. Roblox can pass
+  optional string data attached to the marker as arguments — use `...` to
+  capture them if needed.
+</ParamField>
+
+## Return Value
+
+<ResponseField name="connection" type="RBXScriptConnection?">
+  An `RBXScriptConnection` you can use to disconnect the listener later. Returns
+  `nil` if no track matching `Id` is currently loaded on `Model`.
+</ResponseField>
+
+## Notes
+
+- Markers are defined in the **Roblox Animation Editor**, not in EZAnim. EZAnim only provides a convenient wrapper around `AnimationTrack:GetMarkerReachedSignal()`. Refer to the [Roblox documentation](https://create.roblox.com/docs/reference/engine/classes/AnimationTrack#GetMarkerReachedSignal) for instructions on placing markers.
+- You can place **multiple markers with the same name** in one animation. Each one triggers the callback independently as the playhead crosses it.
+- Marker names are **case-sensitive**. `"Footstep"` and `"footstep"` are treated as different markers.
+
+## Example
+
+The example below plays a walk cycle animation and plays a footstep sound every time the `"Footstep"` marker in that animation is reached. The listener is disconnected when the animation stops to prevent stale callbacks.
+
+```lua Footstep Sound on Marker
+local EZAnim   = require(game.ReplicatedStorage.EZAnim)
+local SoundService = game:GetService("SoundService")
+
+EZAnim:setup({
+    Walk = "rbxassetid://123456789",
+})
+
+local character    = workspace.MyCharacter
+local footstepSound = character:FindFirstChild("Footstep", true) -- Sound instance in rig
+
+EZAnim:play(character, "Walk")
+
+local markerConn
+markerConn = EZAnim:onMarker(character, "Walk", "Footstep", function()
+    if footstepSound then
+        footstepSound:Play()
+    end
+end)
+
+-- Clean up the marker listener when the walk animation stops
+EZAnim:onStopped(character, "Walk", function()
+    if markerConn then
+        markerConn:Disconnect()
+    end
+end)
+```
+
+<Tip>
+  You can use the same `onMarker()` pattern to trigger any frame-accurate event
+  — muzzle flashes, hit-detection windows, screen shake, particle bursts, and
+  more. Just add a named marker in the Animation Editor and connect to it here.
+</Tip>

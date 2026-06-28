@@ -1,0 +1,38 @@
+---
+title: "EZAnim: Roblox Animation Management Made Easy"
+sidebarTitle: "Introduction"
+description: "EZAnim is a Luau module that gives your Roblox game a clean, unified API for playing, layering, queuing, and cross-fading animations."
+---
+
+EZAnim is a lightweight Luau module designed to take the friction out of Roblox animation management. Instead of juggling raw `AnimationTrack` objects, priority flags, and manual cleanup code spread across dozens of scripts, you call a single function and EZAnim handles the rest — loading the animator, caching the track, applying your default fade and speed values, and cleaning up automatically when a model is destroyed.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="One-Call Playback" icon="play">
+    Start, stop, pause, and resume any animation on any model with a single method call. No boilerplate `AnimationTrack` management required.
+  </Card>
+  <Card title="Animation Queues" icon="list-ol">
+    Chain a sequence of animations to play back-to-back using `:queue()`. Each entry in the list runs after the previous one finishes.
+  </Card>
+  <Card title="Cross-Fades" icon="shuffle">
+    Smoothly transition between two animations with `:crossFade()`. Supply a custom fade duration or fall back to your configured default.
+  </Card>
+  <Card title="Layer & Group Tracking" icon="layer-group">
+    Assign animations to built-in layers (`FullBody`, `UpperBody`, `LowerBody`, `Face`) and named groups so upper-body actions never clash with locomotion.
+  </Card>
+  <Card title="Ragdoll Physics" icon="person-falling">
+    Trigger a full ragdoll effect on any model with `:ragdoll()` and restore it cleanly with `:unragdoll()`. Optionally pass a duration for automatic recovery.
+  </Card>
+  <Card title="Auto Cleanup" icon="broom">
+    When `AutoCleanUp` is enabled, EZAnim listens for model removal and disposes of every cached track and connection automatically — no memory leaks.
+  </Card>
+</CardGroup>
+
+## Where EZAnim Lives in Your Project
+
+EZAnim is a single `ModuleScript`. The recommended location is `ReplicatedStorage` — placing it there lets both server-side `Script`s and client-side `LocalScript`s require the same module without duplication. If your animations are strictly server-authoritative you can place it inside `ServerScriptService` instead, but `ReplicatedStorage` works for most projects.
+
+<Card title="Install EZAnim" icon="download" href="/installation">
+  Follow the step-by-step installation guide to add EZAnim to your Roblox place and require it for the first time.
+</Card>

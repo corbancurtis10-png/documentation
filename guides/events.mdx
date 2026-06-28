@@ -1,0 +1,126 @@
+---
+title: "Animation Events and Callbacks in EZAnim"
+sidebarTitle: "Events"
+description: "Hook into animation lifecycle events with EZAnim's onStopped, onEnded, and onMarker callbacks to drive reactive game logic."
+---
+
+EZAnim exposes three event hooks that let you run code in response to things happening inside a playing animation track. Rather than reaching into the `AnimationTrack` object yourself, you pass a callback to `:onStopped()`, `:onEnded()`, or `:onMarker()` and EZAnim wires up the underlying `RBXScriptConnection` for you. Every method returns that connection so you can disconnect it whenever your listener is no longer needed.
+
+<Warning>
+  All three event methods return `nil` if the animation has never been played on the given model. EZAnim can only connect to a track that has already been loaded. Always ensure you have called `:play()` on the animation at least once before attaching event listeners, or guard the return value before using it.
+</Warning>
+
+<Note>
+  Each method returns the `RBXScriptConnection` it creates. Store that value and call `:Disconnect()` on it when the listener is no longer needed — for example when a character is removed, a round ends, or the UI that depended on the callback is destroyed. Unmanaged connections are a common source of memory leaks.
+</Note>
+
+## `onStopped`
+
+`:onStopped()` fires when the track stops playing — whether it reached the end naturally, was cut short by `:stop()`, or was replaced by another animation. Use it to trigger clean-up logic or to know when it is safe to transition to the next state.
+
+```lua LocalScript/WalkLogger.lua
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local Anim = EZAnim.init({
+    List = {
+        Walk = "rbxassetid://123456789",
+    },
+    DefaultFade = 0.15,
+})
+
+local character = game.Players.LocalPlayer.Character
+
+-- Start the walk animation
+Anim:play(character, "Walk", Enum.AnimationPriority.Movement, true)
+
+-- Log every time the walk track stops
+local walkStoppedConn = Anim:onStopped(character, "Walk", function()
+    print("Walk animation stopped.")
+end)
+
+-- When the character is removed, clean up the listener
+character.AncestryChanged:Connect(function()
+    if not character:IsDescendantOf(game) then
+        walkStoppedConn:Disconnect()
+    end
+end)
+```
+
+## `onEnded`
+
+`:onEnded()` fires only when a **non-looped** track reaches the very end of its timeline. It does not fire if the track was stopped early. This makes it the right hook for chaining follow-up logic that should only run after the full animation completes — such as restoring an idle pose after an attack.
+
+```lua LocalScript/CombatController.lua
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local Anim = EZAnim.init({
+    List = {
+        Idle   = "rbxassetid://123456789",
+        Attack = "rbxassetid://234567891",
+    },
+    DefaultFade = 0.1,
+})
+
+local character = game.Players.LocalPlayer.Character
+
+-- Play the attack, then automatically restore idle when it fully ends
+Anim:play(character, "Attack", Enum.AnimationPriority.Action, false)
+
+local attackEndedConn = Anim:onEnded(character, "Attack", function()
+    -- Attack animation has played all the way through
+    Anim:play(character, "Idle", Enum.AnimationPriority.Idle, true)
+    print("Attack ended — returning to idle.")
+end)
+
+-- Disconnect once we are done with this combat session
+local function cleanUpCombat()
+    attackEndedConn:Disconnect()
+end
+```
+
+## `onMarker`
+
+`:onMarker()` fires when the playhead hits a named animation marker that you placed inside the **Roblox Animation Editor**. This is the cleanest way to synchronise game effects — sounds, particles, hitbox activation — to specific moments in an animation without hardcoding time offsets.
+
+```lua LocalScript/FootstepController.lua
+local EZAnim  = require(game.ReplicatedStorage.EZAnim)
+local SoundService = game:GetService("SoundService")
+
+local Anim = EZAnim.init({
+    List = {
+        Walk = "rbxassetid://123456789",
+    },
+    DefaultFade = 0.15,
+})
+
+local character = game.Players.LocalPlayer.Character
+
+-- Play the walk animation (it has "Footstep" markers on each step)
+Anim:play(character, "Walk", Enum.AnimationPriority.Movement, true)
+
+-- Fire a footstep sound every time the "Footstep" marker is hit
+local footstepConn = Anim:onMarker(character, "Walk", "Footstep", function()
+    local footstepSound = SoundService:FindFirstChild("FootstepSound")
+    if footstepSound then
+        footstepSound:Play()
+    end
+end)
+
+-- Disconnect when the character leaves
+character.AncestryChanged:Connect(function()
+    if not character:IsDescendantOf(game) then
+        footstepConn:Disconnect()
+    end
+end)
+```
+
+The string you pass as `Marker` must exactly match the marker name you assigned in the Animation Editor. Marker names are case-sensitive.
+
+<CardGroup cols={2}>
+  <Card title="Queue" icon="list-ol" href="/guides/queue">
+    Chain animations sequentially using the built-in queue system.
+  </Card>
+  <Card title="Basic Playback" icon="play" href="/guides/basic-playback">
+    Start here if you are new to the EZAnim playback API.
+  </Card>
+</CardGroup>

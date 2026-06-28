@@ -1,0 +1,49 @@
+---
+title: "EZAnim:queue() — Queue Sequential Animations"
+sidebarTitle: "queue()"
+description: "Appends a list of animations to a model's playback queue, playing each one in order at Action priority and automatically advancing when each track stops."
+---
+
+`EZAnim:queue()` lets you schedule a sequence of animations to play back-to-back on a model. Animations are appended to an internal queue and played at **Action priority** as non-looped tracks. After each animation finishes (detected via the `Stopped` event, with a timeout of `Length / Speed + 0.25` seconds), the next one starts automatically. When the queue is exhausted, both the queue and the current animation tracking are cleared.
+
+<ParamField query="Model" type="Model" required>
+  The Roblox `Model` instance on which to queue the animations.
+</ParamField>
+
+<ParamField query="AnimationList" type="{string}" required>
+  An ordered array of animation ID strings (keys from your loaded animation list) to play sequentially. Each entry is played in the order it appears in the array.
+</ParamField>
+
+<ParamField query="Fade" type="number">
+  Optional fade-in duration in seconds applied to each animation in the queue as it starts playing.
+</ParamField>
+
+<ParamField query="Speed" type="number">
+  Optional playback speed multiplier applied to each animation in the queue. Defaults to `1` (normal speed).
+</ParamField>
+
+<ParamField query="Weight" type="number">
+  Optional blend weight applied to each animation in the queue.
+</ParamField>
+
+<Warning>
+  Do **not** pass `Speed = 0`. Because the queue timeout is calculated as `Length / Speed`, a speed of `0` produces a division-by-zero scenario and will stall the queue indefinitely. Use a small positive value like `0.1` as a safe minimum if very slow playback is needed.
+</Warning>
+
+<Note>
+  If an animation is already playing on the model when you call `queue()`, the new entries are appended and the queue processor will pick them up automatically after the current animation finishes.
+</Note>
+
+```lua Play a combo sequence of animations
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local character = workspace.Dummy
+EZAnim:load(character, {
+    combo1 = "rbxassetid://123456789",
+    combo2 = "rbxassetid://234567891",
+    combo3 = "rbxassetid://345678912",
+})
+
+-- Queue three combo animations to play one after the other
+EZAnim:queue(character, { "combo1", "combo2", "combo3" }, 0.1, 1, 1)
+```

@@ -1,0 +1,105 @@
+---
+title: "EZAnim:playOnce() — Play Animation from Start"
+sidebarTitle: "playOnce()"
+description: "Play a named animation from the very beginning every time, ideal for hit reactions, ability casts, and one-shot animations that must never resume mid-way."
+---
+
+`:playOnce()` behaves identically to `:play()` with one important difference: immediately after starting the track it resets `Track.TimePosition` to `0`, guaranteeing the animation always plays from its first frame regardless of any cached playback position. This makes it the right choice whenever you need a guaranteed full playthrough — hit reactions, ability activations, cutscene triggers, or any one-shot animation where resuming from a previous position would look wrong.
+
+```lua EZAnim:playOnce() signature
+EZAnim:playOnce(
+    Model:    Model,
+    Id:       string,
+    Priority: string?,   -- "Idle"|"Movement"|"Action"|"Action2"|"Action3"|"Action4"
+    Looped:   boolean?,
+    Fade:     number?,
+    Speed:    number?,
+    Weight:   number?,
+    Layer:    string?,   -- "FullBody"|"UpperBody"|"LowerBody"|"Face"
+    Group:    string?
+): AnimationTrack | nil
+```
+
+## Parameters
+
+<ParamField query="Model" type="Model" required>
+  The Roblox `Model` instance whose `Humanoid` or `AnimationController` will play the animation.
+</ParamField>
+
+<ParamField query="Id" type="string" required>
+  The key from the `List` table you registered in `EZAnim.init()`.
+</ParamField>
+
+<ParamField query="Priority" type="string">
+  The `Enum.AnimationPriority` name for the track. Accepted values are `"Idle"`, `"Movement"`, `"Action"`, `"Action2"`, `"Action3"`, and `"Action4"`. Defaults to `"Movement"`.
+</ParamField>
+
+<ParamField query="Looped" type="boolean">
+  Whether the animation loops after completing. Defaults to `false`. You can pass `true` here, but in most `:playOnce()` use-cases you want a single full playthrough.
+</ParamField>
+
+<ParamField query="Fade" type="number">
+  The fade-in duration in seconds. Overrides `DefaultFade` for this call only.
+</ParamField>
+
+<ParamField query="Speed" type="number">
+  The playback speed multiplier. Overrides `DefaultSpeed` for this call only.
+</ParamField>
+
+<ParamField query="Weight" type="number">
+  The blend weight. Overrides `DefaultWeight` for this call only.
+</ParamField>
+
+<ParamField query="Layer" type="string">
+  An optional body-layer hint for internal current-track tracking. Accepted values are `"FullBody"`, `"UpperBody"`, `"LowerBody"`, and `"Face"`.
+</ParamField>
+
+<ParamField query="Group" type="string">
+  An arbitrary group name for per-group current-track tracking.
+</ParamField>
+
+## Return value
+
+<ResponseField name="return" type="AnimationTrack | nil">
+  The playing `AnimationTrack` with `TimePosition` already reset to `0`, or `nil` if the model has no `Humanoid` or `AnimationController`, or if `Id` was not found in the registered animation list.
+</ResponseField>
+
+## When to use `:playOnce()` vs `:play()`
+
+Use `:play()` for sustained, looping states like idle, walking, or running where picking up from the cached position is harmless or even desirable. Use `:playOnce()` any time the animation **must** start at frame zero:
+
+- **Hit reactions** — a flinch that begins partway through looks broken.
+- **Ability casts** — wind-up and release keyframes need to fire in the correct order.
+- **SFX-synced animations** — if a sound is timed to a specific keyframe, a mid-animation resume will desync it.
+- **Cutscene segments** — scripted sequences where timing is critical.
+
+## Example
+
+```lua LocalScript — triggering a hit reaction on damage
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Anim = require(ReplicatedStorage.AnimModule)
+
+local character = script.Parent
+local humanoid  = character:WaitForChild("Humanoid")
+
+-- Play looped idle normally
+Anim:play(character, "Idle", "Idle", true)
+
+-- Respond to incoming damage with a guaranteed full hit-react
+humanoid.HealthChanged:Connect(function(newHealth)
+    local hitTrack = Anim:playOnce(
+        character,
+        "HitReact",
+        "Action",   -- Priority overrides the idle
+        false,      -- Not looped — play once and finish
+        0.05        -- Quick fade so the reaction feels snappy
+    )
+
+    if hitTrack then
+        -- Resume idle as soon as the hit react is done
+        hitTrack.Stopped:Once(function()
+            Anim:play(character, "Idle", "Idle", true)
+        end)
+    end
+end)
+```

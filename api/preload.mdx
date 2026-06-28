@@ -1,0 +1,57 @@
+---
+title: "EZAnim:preload() — Cache Animations Before Use"
+sidebarTitle: "preload()"
+description: "Pre-create Animation instances for a list of animation IDs so that the first call to :play() on each one is immediate and hitch-free."
+---
+
+`preload()` walks through a list of animation names and creates the underlying `Animation` instances for each one, storing them in EZAnim's internal cache. Because these instances are created ahead of time, the first call to `:play()` for a preloaded animation does not need to build the instance on the spot, eliminating the small hitch that would otherwise occur. Preloading only creates `Animation` instances — it does not load tracks onto any model. Tracks are still loaded lazily on the first `:play()` call. Call `preload()` during a loading screen or at game startup, before any characters are spawned, to get the smoothest experience.
+
+## Parameters
+
+<ParamField path="Ids" type="{string}" required>
+  An array of animation name strings, each matching a key in the animation list
+  you passed to `EZAnim:setup()`. Any ID that is not present in the list is
+  skipped with a warning in the output. IDs that are already cached are also
+  silently skipped, so it is safe to call `preload()` more than once with
+  overlapping lists.
+</ParamField>
+
+## Notes
+
+- `preload()` only creates `Animation` instances. It does **not** load `AnimationTrack` objects onto a model — that step still happens on the first `:play()`. For most use cases this is sufficient to eliminate noticeable hitches.
+- Passing an ID that is not in your animation list logs a warning but does not throw an error, so the rest of the list continues to process normally.
+- It is safe to call `preload()` multiple times with the same IDs — already-cached entries are simply skipped.
+
+## Example
+
+The example below registers a set of combat animations with EZAnim and then preloads all of them at game start so that the first attack, dodge, and block animations play instantly when a player triggers them.
+
+```lua Preload Combat Animations at Game Start
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+-- Register all animations with EZAnim
+EZAnim:setup({
+    Idle         = "rbxassetid://123456789",
+    Walk         = "rbxassetid://234567891",
+    AttackLight  = "rbxassetid://345678912",
+    AttackHeavy  = "rbxassetid://456789123",
+    Dodge        = "rbxassetid://567891234",
+    Block        = "rbxassetid://678912345",
+})
+
+-- Preload every combat animation before any player spawns
+EZAnim:preload({
+    "AttackLight",
+    "AttackHeavy",
+    "Dodge",
+    "Block",
+})
+
+print("Combat animations preloaded and ready.")
+```
+
+<Tip>
+  For games with many animations, call `preload()` inside a loading screen
+  `coroutine` or paired with `ContentProvider:PreloadAsync()` so players never
+  see a hitch on first play.
+</Tip>

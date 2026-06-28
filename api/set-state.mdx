@@ -1,0 +1,37 @@
+---
+title: "EZAnim:setState() — Set the Current Model State"
+sidebarTitle: "setState()"
+description: "Stores an arbitrary state string for a model inside EZAnim, giving you a simple key-value slot to track animation state machine transitions per model."
+---
+
+`EZAnim:setState()` writes a string value into EZAnim's internal state store, keyed by `Model`. It is a lightweight key-value mechanism — EZAnim makes no decisions based on this value itself. You own the logic: set a state when a transition happens, then read it back with [`:getState()`](/api/get-state) from anywhere in your code to drive further animation decisions. This is particularly useful when building animation state machines where multiple scripts need to agree on what a character is currently doing.
+
+<ParamField query="Model" type="Model" required>
+  The Roblox `Model` instance to associate the state string with.
+</ParamField>
+
+<ParamField query="State" type="string" required>
+  An arbitrary string label representing the model's current animation state. Common examples include `"idle"`, `"running"`, `"jumping"`, or `"attacking"`.
+</ParamField>
+
+<Note>
+  EZAnim does not validate or act on the state string — it is purely for your own bookkeeping. You are responsible for keeping the state in sync with actual animation playback.
+</Note>
+
+```lua Set state when transitioning between animations
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local character = workspace.Dummy
+EZAnim:load(character, {
+    idle   = "rbxassetid://123456789",
+    sprint = "rbxassetid://234567891",
+})
+
+-- Transition into the sprint state
+EZAnim:stop(character, "idle")
+EZAnim:play(character, "sprint")
+EZAnim:setState(character, "sprinting")
+
+-- Somewhere else in your code you can now check the state
+-- and respond accordingly (see getState)
+```

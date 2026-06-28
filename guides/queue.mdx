@@ -1,0 +1,100 @@
+---
+title: "Queueing Sequential Animations in EZAnim"
+sidebarTitle: "Queue"
+description: "Play a series of animations back-to-back on a model using EZAnim's built-in queue system — no manual event wiring required."
+---
+
+Sometimes you need several animations to play in strict sequence — a three-hit combo, a multi-stage emote, or a cutscene movement chain. EZAnim's `:queue()` method handles this for you automatically: it plays each animation in the list and waits for the previous track's `Stopped` event before moving to the next one, so you never have to wire up chained callbacks yourself.
+
+## How `:queue()` Works
+
+When you call `:queue()`, EZAnim iterates through the `AnimationList` you provide and, for each entry:
+
+<Steps>
+  <Step title="Plays the animation">
+    The current animation is started with `:play()` using the `Priority`, `Speed`, and `Weight` you supplied (or global defaults when omitted).
+  </Step>
+  <Step title="Waits for it to stop">
+    EZAnim yields internally until the track fires its `Stopped` event — meaning the animation has fully ended or been explicitly stopped.
+  </Step>
+  <Step title="Advances to the next entry">
+    Once the previous track stops, the next animation in the list begins. This continues until the list is exhausted.
+  </Step>
+</Steps>
+
+The queue is **per-model** and clears itself as soon as the last animation in the list finishes. There is no persistent queue object — each `:queue()` call is self-contained.
+
+<Note>
+  All animations dispatched by `:queue()` run at `Enum.AnimationPriority.Action` priority. If you need a different priority you should wire the sequence yourself using `:onStopped()` callbacks instead.
+</Note>
+
+## Full Example: Three-Hit Combo
+
+```lua ServerScript/CombatController.lua
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local Anim = EZAnim.init({
+    List = {
+        Punch1 = "rbxassetid://123456789",
+        Punch2 = "rbxassetid://234567891",
+        Finisher = "rbxassetid://345678912",
+        Idle   = "rbxassetid://456789123",
+    },
+    DefaultFade  = 0.1,
+    DefaultSpeed = 1,
+})
+
+local character = game.Players.LocalPlayer.Character
+
+-- Queue a three-hit combo at slightly elevated speed
+Anim:queue(
+    character,
+    { "Punch1", "Punch2", "Finisher" },
+    0.1,  -- Fade between each animation
+    1.1,  -- Speed
+    1     -- Weight
+)
+```
+
+After `"Finisher"` stops, the queue is empty and the model's animator returns to whatever was already playing (typically a looping idle).
+
+## Tracking Combo State with `setState`
+
+You can pair `:queue()` with `:setState()` to know exactly which phase of the combo a model is in at any given moment.
+
+```lua ServerScript/CombatController.lua
+local character = game.Players.LocalPlayer.Character
+
+-- Mark the model as mid-combo before the queue starts
+Anim:setState(character, "Combo")
+
+Anim:queue(character, { "Punch1", "Punch2", "Finisher" }, 0.1, 1.1, 1)
+
+-- The queue runs synchronously in a coroutine or task.spawn context.
+-- After it finishes, clear the state.
+Anim:setState(character, "Idle")
+Anim:play(character, "Idle", Enum.AnimationPriority.Idle, true)
+```
+
+You can read the state back at any time with `:getState()`:
+
+```lua ServerScript/CombatController.lua
+if Anim:getState(character) == "Combo" then
+    print("Still in combo — input buffering active")
+end
+```
+
+This pattern is useful for input buffering: hold new attack inputs while the state is `"Combo"` and release them once it clears.
+
+<Warning>
+  Never pass `Speed = 0` to `:queue()`. Because the queue waits for the `Stopped` event, a speed of `0` means the animation never progresses and the queue **stalls indefinitely**. Use a safe minimum such as `0.01` if you intentionally want very slow playback, or handle the zero-speed case before calling `:queue()`.
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="Events" icon="bell" href="/guides/events">
+    Use onStopped and onEnded to build custom chaining logic.
+  </Card>
+  <Card title="Basic Playback" icon="play" href="/guides/basic-playback">
+    Learn the core play and stop API.
+  </Card>
+</CardGroup>

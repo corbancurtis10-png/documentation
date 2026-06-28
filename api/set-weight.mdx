@@ -1,0 +1,46 @@
+---
+title: "EZAnim:setWeight() — Adjust Animation Blend Weight"
+sidebarTitle: "setWeight()"
+description: "Sets the blend weight of a loaded animation track, controlling how much it influences the final pose. Optionally fades to the new weight over a given duration."
+---
+
+`EZAnim:setWeight()` controls how strongly an animation contributes to the final blended pose of a model. Roblox blends all playing animation tracks together; a higher `Weight` gives a track more influence over the result, while a weight of `0` makes it invisible in the blend even if it is still technically playing. You can optionally supply a `Fade` duration to smoothly transition to the new weight instead of snapping instantly.
+
+<ParamField query="Model" type="Model" required>
+  The Roblox `Model` instance that owns the animation track you want to adjust.
+</ParamField>
+
+<ParamField query="Id" type="string" required>
+  The string key identifying the animation track whose blend weight you want to change.
+</ParamField>
+
+<ParamField query="Weight" type="number" required>
+  The target blend weight, typically between `0` and `1`. A value of `1` is full influence; `0` removes the track's contribution from the blend entirely. Values above `1` are valid but may produce exaggerated results.
+</ParamField>
+
+<ParamField query="Fade" type="number">
+  Optional duration in seconds over which to smoothly transition to the new weight. When omitted, the weight changes instantly.
+</ParamField>
+
+<Note>
+  `setWeight()` has no effect if the track has not been loaded for the given `Model` and `Id`. For a smooth, tween-driven weight change, consider using [`EZAnim:tween()`](/api/tween) instead.
+</Note>
+
+```lua Blend between an idle and a wounded animation
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local character = workspace.Dummy
+EZAnim:load(character, {
+    idle    = "rbxassetid://123456789",
+    wounded = "rbxassetid://987654321",
+})
+
+EZAnim:play(character, "idle")
+EZAnim:play(character, "wounded")
+
+-- Start with the wounded animation having no influence
+EZAnim:setWeight(character, "wounded", 0)
+
+-- Gradually blend it in over 1.5 seconds when the character takes damage
+EZAnim:setWeight(character, "wounded", 1, 1.5)
+```

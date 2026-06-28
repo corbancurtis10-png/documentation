@@ -1,0 +1,37 @@
+---
+title: "EZAnim:setTime() — Seek to a Position in an Animation"
+sidebarTitle: "setTime()"
+description: "Seeks a loaded animation track to a specific time position in seconds, letting you jump to any frame instantly during playback or while paused."
+---
+
+`EZAnim:setTime()` sets `Track.TimePosition` directly, allowing you to scrub to any point in an animation. This is useful for syncing animations to game events, skipping intros, or manually driving playback. The value is in **seconds from the start** of the animation clip.
+
+<ParamField query="Model" type="Model" required>
+  The Roblox `Model` instance that owns the animation track you want to seek.
+</ParamField>
+
+<ParamField query="Id" type="string" required>
+  The string key identifying the animation track to seek.
+</ParamField>
+
+<ParamField query="TimePosition" type="number" required>
+  The target time position in seconds, measured from the beginning of the animation clip. Values beyond the clip length will be clamped by the Roblox engine.
+</ParamField>
+
+<Warning>
+  The animation must already be playing or loaded onto the track for `setTime()` to have any effect. If the track has not been loaded for the given `Model` and `Id`, this call is silently ignored.
+</Warning>
+
+```lua Skip to the midpoint of an animation
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local character = workspace.Dummy
+EZAnim:load(character, {
+    cutscene = "rbxassetid://123456789",
+})
+
+EZAnim:play(character, "cutscene")
+
+-- Jump to 2.5 seconds into the cutscene animation
+EZAnim:setTime(character, "cutscene", 2.5)
+```

@@ -1,0 +1,106 @@
+---
+title: "Ragdoll Physics with EZAnim"
+sidebarTitle: "Ragdoll"
+description: "Enable full ragdoll physics on any Humanoid model with EZAnim, then restore the character with a single unragdoll call."
+---
+
+EZAnim includes a built-in ragdoll system that converts a live, animated character into a physically simulated ragdoll in a single call. It stops all animations, disables every `Motor6D` joint, replaces them with `BallSocketConstraint` physics joints, and drops the `Humanoid` into the `Physics` state — all without you having to touch any of the underlying instances yourself. When you are ready to revive the character, `:unragdoll()` undoes every change and returns the model to normal gameplay.
+
+<Warning>
+  `:ragdoll()` and `:unragdoll()` only work on models that have a `Humanoid` and at least one `Motor6D` joint. If the model is missing either, the call will error. Always validate your model hierarchy before calling these methods.
+</Warning>
+
+## What `:ragdoll()` Does
+
+<Steps>
+  <Step title="Stops all animations">
+    EZAnim calls `:stopAll()` on the model so no animation tracks are competing with the physics simulation.
+  </Step>
+  <Step title="Disables Motor6D joints">
+    Every `Motor6D` in the model is disabled (`Enabled = false`), severing the rigid attachment between parts and allowing them to move freely under physics.
+  </Step>
+  <Step title="Adds BallSocketConstraints">
+    A pair of `Attachment` instances and a `BallSocketConstraint` are inserted at each joint location, giving each limb a realistic range of motion while preventing them from flying apart completely.
+  </Step>
+  <Step title="Sets the Humanoid to Physics state">
+    `Humanoid:ChangeState(Enum.HumanoidStateType.Physics)` is called, and `PlatformStand` is set to `true` and `AutoRotate` to `false`, so the engine treats the character as a pure physics object.
+  </Step>
+</Steps>
+
+## Optional Duration Parameter
+
+Pass a `Duration` (in seconds) to `:ragdoll()` and EZAnim will automatically call `:unragdoll()` on the model after that delay. This is perfect for timed knockdowns where the character should recover on their own.
+
+```lua ServerScript/CombatServer.lua
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local Anim = EZAnim.init({
+    List = {
+        GettingUp = "rbxassetid://123456789",
+    },
+    DefaultFade = 0.15,
+})
+
+local character = game.Players.LocalPlayer.Character
+
+-- Ragdoll for exactly 3 seconds, then auto-recover
+Anim:ragdoll(character, 3)
+```
+
+<Tip>
+  Use the `Duration` parameter for **timed knockdowns** — stun effects, explosion knockback, or any situation where the character should be vulnerable for a fixed window and then recover automatically. For permanent death states, omit `Duration` and call `:unragdoll()` manually when you are ready (e.g. on respawn).
+</Tip>
+
+## What `:unragdoll()` Does
+
+<Steps>
+  <Step title="Re-enables Motor6D joints">
+    Every `Motor6D` that was disabled is set back to `Enabled = true`, restoring rigid skeletal control.
+  </Step>
+  <Step title="Destroys physics objects">
+    All `BallSocketConstraint` instances and their associated `Attachment` pairs are destroyed, cleaning up the physics rig completely.
+  </Step>
+  <Step title="Restores Humanoid state">
+    `PlatformStand` is set back to `false`, `AutoRotate` is restored to `true`, and `Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)` is called so the character plays its get-up animation and resumes normal locomotion.
+  </Step>
+</Steps>
+
+## Death and Revival Example
+
+```lua ServerScript/CombatServer.lua
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local Anim = EZAnim.init({
+    List = {
+        Idle = "rbxassetid://123456789",
+    },
+    DefaultFade = 0.15,
+})
+
+local character = game.Players.LocalPlayer.Character
+local humanoid  = character:WaitForChild("Humanoid")
+
+-- When the character's health hits zero, ragdoll them permanently
+humanoid.Died:Connect(function()
+    Anim:ragdoll(character) -- no Duration — stays ragdolled until revived
+    print("Character has died and is now ragdolled.")
+end)
+
+-- A separate revival system calls this when the character is respawned
+local function reviveCharacter()
+    Anim:unragdoll(character)
+    -- Once GettingUp completes, resume normal gameplay animations
+    task.wait(1.2)
+    Anim:play(character, "Idle", Enum.AnimationPriority.Idle, true)
+    print("Character revived.")
+end
+```
+
+<CardGroup cols={2}>
+  <Card title="Basic Playback" icon="play" href="/guides/basic-playback">
+    Understand play and stopAll, which ragdoll uses internally.
+  </Card>
+  <Card title="Events" icon="bell" href="/guides/events">
+    Listen to animation events to chain logic onto ragdoll recovery.
+  </Card>
+</CardGroup>

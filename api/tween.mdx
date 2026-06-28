@@ -1,0 +1,48 @@
+---
+title: "EZAnim:tween() — Smoothly Adjust Speed and Weight"
+sidebarTitle: "tween()"
+description: "Smoothly interpolates an animation track's speed and weight to target values over a given duration using 10 steps, running asynchronously in the background."
+---
+
+`EZAnim:tween()` animates transitions in playback speed and blend weight without blocking your code. It spawns a background coroutine via `task.spawn` that performs **10 linear interpolation steps** over the specified `Time` duration (defaulting to `0.2` seconds). You can supply a `TargetSpeed`, a `TargetWeight`, or both — any parameter you omit is left unchanged. This is the preferred way to gracefully fade out an animation or smoothly ramp up speed.
+
+<ParamField query="Model" type="Model" required>
+  The Roblox `Model` instance that owns the animation track you want to tween.
+</ParamField>
+
+<ParamField query="Id" type="string" required>
+  The string key identifying the animation track to tween.
+</ParamField>
+
+<ParamField query="TargetSpeed" type="number">
+  The desired final playback speed multiplier. The tween starts from the track's current `Speed` and interpolates linearly to this value. Omit to leave speed unchanged.
+</ParamField>
+
+<ParamField query="TargetWeight" type="number">
+  The desired final blend weight. The tween starts from a weight of `1` and interpolates linearly to this value. Omit to leave weight unchanged.
+</ParamField>
+
+<ParamField query="Time" type="number">
+  The total duration of the tween in seconds. Defaults to `0.2` seconds. The transition is divided into 10 equal steps across this duration.
+</ParamField>
+
+<Note>
+  `tween()` runs asynchronously — it returns immediately and the interpolation happens in the background. If you call `tween()` on the same track twice in quick succession, both coroutines will run concurrently and may interfere with each other.
+</Note>
+
+```lua Gracefully fade out an animation before stopping it
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local character = workspace.Dummy
+EZAnim:load(character, {
+    spell = "rbxassetid://123456789",
+})
+
+EZAnim:play(character, "spell")
+
+-- Smoothly fade the animation weight down to 0 over 0.5 seconds,
+-- then stop it once it has faded out
+EZAnim:tween(character, "spell", nil, 0, 0.5)
+task.wait(0.5)
+EZAnim:stop(character, "spell")
+```

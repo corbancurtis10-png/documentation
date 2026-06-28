@@ -1,0 +1,69 @@
+---
+title: "EZAnim.init() — Create an Animation Controller"
+sidebarTitle: "init()"
+description: "Initialize EZAnim with your animation list and global defaults for fade time, playback speed, blend weight, and auto-cleanup behavior."
+---
+
+`EZAnim.init()` is the entry point for the library. You call it once — typically inside a Script or LocalScript at startup — passing a table that maps human-readable animation names to their asset IDs along with any global defaults you want every subsequent call to inherit. The returned instance is your handle for all other EZAnim methods.
+
+```lua EZAnim.init() signature
+EZAnim.init(Options: Options): EZAnim
+```
+
+## Options
+
+<ParamField query="List" type="{[string]: string}" required>
+  A dictionary mapping animation names to Roblox asset ID strings. Every ID you pass to `:play()`, `:stop()`, or `:crossFade()` must exist as a key in this table.
+</ParamField>
+
+<ParamField query="DefaultFade" type="number">
+  The default fade duration (in seconds) used by `:play()`, `:stop()`, and `:crossFade()` when no explicit `Fade` or `FadeTime` argument is provided. Defaults to `0.15`.
+</ParamField>
+
+<ParamField query="DefaultSpeed" type="number">
+  The default playback speed multiplier applied when no explicit `Speed` argument is provided to `:play()`. A value of `1` plays at the authored speed. Defaults to `1`.
+</ParamField>
+
+<ParamField query="DefaultWeight" type="number">
+  The default blend weight applied when no explicit `Weight` argument is provided to `:play()`. A value of `1` gives the animation full influence in the blend graph. Defaults to `1`.
+</ParamField>
+
+<ParamField query="AutoCleanUp" type="boolean">
+  When `true`, EZAnim automatically destroys cached `Animation` instances and `AnimationTrack` objects when a model is removed from the game. Disable this only if you manage cleanup manually. Defaults to `true`.
+</ParamField>
+
+## Return value
+
+<ResponseField name="return" type="EZAnim">
+  A fully initialized EZAnim instance. Store this in a module-level variable and share it across your scripts — you do not need more than one instance per animation set.
+</ResponseField>
+
+## Example
+
+```lua LocalScript — initialize EZAnim at startup
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local EZAnim = require(ReplicatedStorage.EZAnim)
+
+local Anim = EZAnim.init({
+    List = {
+        Idle        = "rbxassetid://123456789",
+        Walk        = "rbxassetid://234567890",
+        Run         = "rbxassetid://345678901",
+        Jump        = "rbxassetid://456789012",
+        Attack      = "rbxassetid://567890123",
+        HitReact    = "rbxassetid://678901234",
+        Death       = "rbxassetid://789012345",
+    },
+    DefaultFade   = 0.2,
+    DefaultSpeed  = 1,
+    DefaultWeight = 1,
+    AutoCleanUp   = true,
+})
+
+-- Anim is now ready — pass it to any script that needs to play animations
+return Anim
+```
+
+<Note>
+  A single EZAnim instance can manage any number of models simultaneously. You only need one instance per animation set — store it in a shared ModuleScript and require it wherever you need to drive animations.
+</Note>

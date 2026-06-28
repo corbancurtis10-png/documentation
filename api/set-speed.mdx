@@ -1,0 +1,41 @@
+---
+title: "EZAnim:setSpeed() — Change Animation Playback Speed"
+sidebarTitle: "setSpeed()"
+description: "Adjusts the playback speed of a loaded animation track using a multiplier. Use values below 1 for slow motion and above 1 to speed up the animation."
+---
+
+`EZAnim:setSpeed()` changes how fast an animation plays back by calling `Track:AdjustSpeed()` under the hood. The `Speed` parameter is a **multiplier** relative to normal playback: `1` is full speed, `2` is double speed, and `0.5` is half speed. You can call this at any time while the animation is loaded, including during playback.
+
+<ParamField query="Model" type="Model" required>
+  The Roblox `Model` instance that owns the animation track you want to adjust.
+</ParamField>
+
+<ParamField query="Id" type="string" required>
+  The string key identifying the animation track whose speed you want to change.
+</ParamField>
+
+<ParamField query="Speed" type="number" required>
+  The playback speed multiplier. `1` is normal speed, `2` is double speed, and `0.5` is half speed. Use `0` to effectively freeze the animation at its current frame.
+</ParamField>
+
+<Note>
+  `setSpeed()` has no effect if the track has not been loaded for the given `Model` and `Id`. Ensure the animation is loaded before calling this function.
+</Note>
+
+```lua Slow-motion effect using setSpeed
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local character = workspace.Dummy
+EZAnim:load(character, {
+    attack = "rbxassetid://123456789",
+})
+
+EZAnim:play(character, "attack")
+
+-- Apply a dramatic slow-motion effect at 30% speed
+EZAnim:setSpeed(character, "attack", 0.3)
+
+-- Restore to normal speed after 3 seconds
+task.wait(3)
+EZAnim:setSpeed(character, "attack", 1)
+```

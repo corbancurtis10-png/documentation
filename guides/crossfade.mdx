@@ -1,0 +1,106 @@
+---
+title: "Cross-Fading Between Animations in EZAnim"
+sidebarTitle: "Cross-Fade"
+description: "Smoothly transition from one playing animation to another using EZAnim's crossFade method for polished, seamless blending."
+---
+
+When you need to move cleanly from one animation to another — such as transitioning a character from walking to running — simply calling `:play()` on the new animation can leave two tracks blending in an uncontrolled way. EZAnim's `:crossFade()` method solves this by stopping the outgoing animation with a timed fade while simultaneously starting the incoming one, giving you a smooth, intentional blend with a single call.
+
+## When to Use `crossFade` vs `play`
+
+Use `:play()` when you are starting a new animation that should layer on top of what is already playing, or when you do not have a specific "from" animation to retire. Use `:crossFade()` when you are **replacing** one named animation with another and want the transition to feel seamless — movement state changes are the most common case.
+
+<CardGroup cols={2}>
+  <Card title="Use :play()" icon="plus">
+    Layering a facial expression on top of a body animation, or starting a looping idle from nothing.
+  </Card>
+  <Card title="Use :crossFade()" icon="shuffle">
+    Switching from Walk → Run, Idle → Combat Idle, or any two mutually exclusive locomotion states.
+  </Card>
+</CardGroup>
+
+## Basic Cross-Fade Example
+
+```lua ServerScript/MovementController.lua
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local Anim = EZAnim.init({
+    List = {
+        Walk = "rbxassetid://123456789",
+        Run  = "rbxassetid://234567891",
+    },
+    DefaultFade  = 0.15,
+    DefaultSpeed = 1,
+})
+
+local character = game.Players.LocalPlayer.Character
+
+-- Start walking
+Anim:play(character, "Walk", Enum.AnimationPriority.Movement, true)
+
+-- Later, the player starts sprinting — cross-fade into Run over 0.3 s
+Anim:crossFade(character, "Walk", "Run", 0.3)
+```
+
+Internally, `:crossFade()` calls `:stop()` on `"Walk"` with the given `FadeTime` and immediately calls `:play()` on `"Run"` using the same `FadeTime` for its blend-in. The two fades overlap, which is what creates the smooth blend.
+
+<Tip>
+  Use the **same `FadeTime` value** for both the outgoing and incoming animations. Because `:crossFade()` applies your `FadeTime` to both the stop fade-out and the play fade-in, matching the durations ensures the total blend period is exactly as long as you expect. If you omit `FadeTime`, EZAnim uses your `DefaultFade` for both sides.
+</Tip>
+
+## Building a Movement State Machine
+
+Cross-fading pairs naturally with a simple state machine pattern. Keep track of the current animation name in a variable and call `:crossFade()` whenever the state changes.
+
+```lua ServerScript/MovementController.lua
+local Anim = EZAnim.init({
+    List = {
+        Idle  = "rbxassetid://123456789",
+        Walk  = "rbxassetid://234567891",
+        Run   = "rbxassetid://345678912",
+        Sprint = "rbxassetid://456789123",
+    },
+    DefaultFade  = 0.2,
+    DefaultSpeed = 1,
+})
+
+local character   = game.Players.LocalPlayer.Character
+local currentAnim = "Idle"
+
+-- Start with the idle loop
+Anim:play(character, "Idle", Enum.AnimationPriority.Movement, true)
+
+local function setMovementState(newState: string)
+    if newState == currentAnim then return end
+
+    -- Cross-fade from whatever is currently playing into the new state
+    Anim:crossFade(character, currentAnim, newState, 0.2)
+    currentAnim = newState
+end
+
+-- Connect to Humanoid speed changes (simplified example)
+local humanoid = character:WaitForChild("Humanoid")
+humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+    local speed = humanoid.WalkSpeed
+    if speed == 0 then
+        setMovementState("Idle")
+    elseif speed <= 12 then
+        setMovementState("Walk")
+    elseif speed <= 20 then
+        setMovementState("Run")
+    else
+        setMovementState("Sprint")
+    end
+end)
+```
+
+Because `setMovementState` guards against re-entering the same state, you never accidentally cross-fade an animation into itself.
+
+<CardGroup cols={2}>
+  <Card title="Basic Playback" icon="play" href="/guides/basic-playback">
+    Master play, stop, and fine-tuning before using crossFade.
+  </Card>
+  <Card title="Pause & Resume" icon="pause" href="/guides/pause-resume">
+    Freeze an animation mid-frame and pick it back up later.
+  </Card>
+</CardGroup>

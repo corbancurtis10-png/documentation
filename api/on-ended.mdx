@@ -1,0 +1,63 @@
+---
+title: "EZAnim:onEnded() — React When an Animation Finishes"
+sidebarTitle: "onEnded()"
+description: "Connect a callback that fires only when a non-looped animation track reaches its natural end, not when it is stopped manually via :stop()."
+---
+
+`onEnded()` lets you run logic precisely when a non-looped animation plays all the way through to its final frame. Unlike [`onStopped()`](/api/on-stopped), this callback does **not** fire when `:stop()` is called manually, making it the right choice for sequencing animations — for example, transitioning from an attack animation back to an idle once the attack finishes on its own. It also does not fire for looped animations, since they never reach a natural end. Always store the returned `RBXScriptConnection` and call `:Disconnect()` when you no longer need the listener.
+
+## Parameters
+
+<ParamField path="Model" type="Model" required>
+  The model whose loaded animation track you want to observe. This must be the
+  same model reference you passed to `:play()` when loading the track.
+</ParamField>
+
+<ParamField path="Id" type="string" required>
+  The name of the animation as registered in your EZAnim animation list. The
+  track must already be loaded on `Model` — if it is not found, the function
+  returns `nil`.
+</ParamField>
+
+<ParamField path="Callback" type="() -> ()" required>
+  The function to call when the animation track reaches its natural end.
+  Receives no arguments.
+</ParamField>
+
+## Return Value
+
+<ResponseField name="connection" type="RBXScriptConnection?">
+  An `RBXScriptConnection` you can use to disconnect the listener later. Returns
+  `nil` if no track matching `Id` is currently loaded on `Model`.
+</ResponseField>
+
+## Notes
+
+- `onEnded()` does **not** fire when `:stop()` is called on the track. Use [`onStopped()`](/api/on-stopped) if you need to catch both manual stops and natural completion.
+- `onEnded()` does **not** fire for looped animations because they never reach a natural end. Make sure the animation identified by `Id` has its loop property disabled.
+
+## Example
+
+The example below plays an attack animation and automatically transitions the character back to an idle animation once the attack finishes naturally. The listener is disconnected immediately inside the callback so it only triggers once per attack.
+
+```lua Attack-to-Idle Transition
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+EZAnim:setup({
+    Attack = "rbxassetid://123456789",
+    Idle   = "rbxassetid://987654321",
+})
+
+local character = workspace.MyCharacter
+
+-- Play the attack animation
+EZAnim:play(character, "Attack")
+
+local connection
+connection = EZAnim:onEnded(character, "Attack", function()
+    -- This fires only when Attack reaches its final frame naturally
+    print("Attack finished — returning to idle")
+    EZAnim:play(character, "Idle")
+    connection:Disconnect()
+end)
+```

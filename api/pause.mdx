@@ -1,0 +1,34 @@
+---
+title: "EZAnim:pause() — Pause an Animation Track"
+sidebarTitle: "pause()"
+description: "Instantly stops a playing animation track and saves its TimePosition so you can resume it later from exactly where it left off."
+---
+
+Pausing an animation with `EZAnim:pause()` performs an **instant stop** (fade of `0`) and stores the track's current `TimePosition` internally. This means the animation freezes in place without any blend-out transition. You can then call `:resume()` at any time to pick up from that same position.
+
+<ParamField query="Model" type="Model" required>
+  The Roblox `Model` instance whose animation you want to pause. This must be the same model you used when loading the animation.
+</ParamField>
+
+<ParamField query="Id" type="string" required>
+  The string key identifying the animation track to pause. This corresponds to the ID you assigned in your animation list.
+</ParamField>
+
+<Note>
+  Pausing uses a fade of `0`, meaning the stop is immediate with no blend-out. To resume playback from the saved position, call [`EZAnim:resume()`](/api/resume) with the same `Model` and `Id`.
+</Note>
+
+```lua Pause an animation on a model
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local character = workspace.Dummy
+EZAnim:load(character, {
+    walk = "rbxassetid://123456789",
+})
+
+-- Start playing the walk animation
+EZAnim:play(character, "walk")
+
+-- Later, pause it — TimePosition is saved internally
+EZAnim:pause(character, "walk")
+```

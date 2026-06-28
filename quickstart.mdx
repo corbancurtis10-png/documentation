@@ -1,47 +1,128 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with EZAnim in 5 Minutes"
+sidebarTitle: "Quickstart"
+description: "Require EZAnim, call init() with your animation list, then play and stop animations on any Roblox model with just a few lines of Luau."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
-
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+This guide takes you from a fresh require all the way to playing a looped idle animation and a one-shot action on a character model. By the end you will have a working script you can drop straight into your project and build on.
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Require EZAnim">
+    At the top of your script, require the module from `ReplicatedStorage`. All subsequent calls go through this single reference.
 
-    ```bash
-    npm install your-package
+    ```lua title="ServerScriptService/AnimationController.lua"
+    local EZAnim = require(game.ReplicatedStorage.EZAnim)
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+  <Step title="Initialise EZAnim with your animation list">
+    Call `EZAnim.init()` once — typically at the top of your script, before any animation is played. Pass an `Options` table that includes your `List` of named animation IDs. You can also set library-wide defaults for fade time, speed, and weight here.
 
-    ```bash
-    your-cli init
+    ```lua title="ServerScriptService/AnimationController.lua"
+    EZAnim.init({
+        List = {
+            Idle  = "rbxassetid://123456789",
+            Jump  = "rbxassetid://987654321",
+            Attack = "rbxassetid://112233445",
+        },
+        DefaultFade   = 0.2,   -- seconds to blend in/out (default 0.15)
+        DefaultSpeed  = 1,     -- playback speed multiplier (default 1)
+        DefaultWeight = 1,     -- blend weight (default 1)
+        AutoCleanUp   = true,  -- dispose tracks when a model is removed (default true)
+    })
+    ```
+
+    <Info>
+      Every key in `List` becomes the animation ID you pass to methods like `:play()` and `:stop()`. Choose names that are readable at a glance — `"Idle"`, `"RunForward"`, `"AttackSlash"` — rather than raw asset IDs.
+    </Info>
+  </Step>
+  <Step title="Play an animation">
+    Call `:play()` with the target model and the animation name from your list. The optional parameters let you override priority, looping, fade, speed, and weight on a per-call basis.
+
+    ```lua title="ServerScriptService/AnimationController.lua"
+    local character = game.Players.LocalPlayer.Character
+
+    -- Play a looped idle animation
+    EZAnim:play(character, "Idle", nil, true)
+
+    -- Play a one-shot attack animation (not looped)
+    EZAnim:playOnce(character, "Attack")
     ```
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+  <Step title="Stop an animation">
+    Call `:stop()` to halt a specific animation, or `:stopAll()` to stop every active track on a model at once. Both methods accept an optional `FadeTime` to smooth the transition out.
 
-    ```bash
-    your-cli start
+    ```lua title="ServerScriptService/AnimationController.lua"
+    -- Stop only the Idle animation
+    EZAnim:stop(character, "Idle", 0.3)
+
+    -- Stop every animation on the character
+    EZAnim:stopAll(character, 0.2)
     ```
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## Full Working Example
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+The snippet below combines all four steps into a single script you can paste into a `LocalScript` inside `StarterPlayerScripts`.
+
+```lua title="StarterPlayerScripts/AnimationController.lua"
+local Players      = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local EZAnim = require(ReplicatedStorage.EZAnim)
+
+-- 1. Initialise with your animation list and defaults
+EZAnim.init({
+    List = {
+        Idle   = "rbxassetid://123456789",
+        Attack = "rbxassetid://987654321",
+    },
+    DefaultFade  = 0.2,
+    DefaultSpeed = 1,
+    AutoCleanUp  = true,
+})
+
+-- 2. Wait for the local character to load
+local player    = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- 3. Preload animations to avoid a hitch on first play
+EZAnim:preload({ "rbxassetid://123456789", "rbxassetid://987654321" })
+
+-- 4. Play a looped idle immediately
+EZAnim:play(character, "Idle", nil, true)
+
+-- 5. Fire a one-shot attack animation when the player presses E
+local UserInputService = game:GetService("UserInputService")
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if input.KeyCode == Enum.KeyCode.E then
+        -- playOnce automatically stops when the animation ends
+        EZAnim:playOnce(character, "Attack")
+    end
+end)
+
+-- 6. Stop the idle when the character is about to be removed
+character.AncestryChanged:Connect(function()
+    if not character:IsDescendantOf(game) then
+        EZAnim:stopAll(character, 0.1)
+    end
+end)
+```
+
+<Tip>
+  Call `:preload()` with your animation asset IDs early in your script (before any player interaction can trigger a play). Preloading tells Roblox to fetch and compile the animation data in the background, so the very first `:play()` call is instant and hitch-free.
 </Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Core Concepts" icon="book-open" href="/concepts/animation-list">
+    Learn how the animation list, layers, groups, and the state machine work together to keep your animations organised.
+  </Card>
+  <Card title="API Reference — init()" icon="code" href="/api/init">
+    See every field of the `Options` table, their types, and their default values in the full API reference.
+  </Card>
+</CardGroup>

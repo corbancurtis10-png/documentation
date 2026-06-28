@@ -1,0 +1,53 @@
+---
+title: "Building Your Animation List in EZAnim"
+sidebarTitle: "Animation List"
+description: "Learn how to define the List field — a name-to-asset-ID map that tells EZAnim which animations are available and how to play them."
+---
+
+The `List` field is the foundation of every EZAnim setup. It is a plain Luau table that maps human-readable string names to Roblox animation asset IDs. Every animation you want to play, stop, or reference through the library must appear in this table before you call `EZAnim.init()`. Think of it as a registry: the names you define here become the identifiers you use everywhere else in the API.
+
+## The rbxassetid:// format
+
+Roblox identifies animation assets using the `rbxassetid://` URI scheme followed by a numeric asset ID. You can find an animation's ID on the Roblox Creator Hub or in Studio's Animation Editor. Every value in your `List` table must follow this format exactly — passing a bare number or a plain URL string will not work.
+
+```lua Example rbxassetid string
+local assetId = "rbxassetid://123456789"
+```
+
+## Defining your List
+
+Pass the `List` table as a field inside the options table you hand to `EZAnim.init()`. Each key is the name you will use when calling `:play()`, `:stop()`, and other methods. Values are the corresponding `rbxassetid://` strings.
+
+```lua Defining the animation list
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local animator = EZAnim.init(model, {
+    List = {
+        Idle   = "rbxassetid://111111111",
+        Walk   = "rbxassetid://222222222",
+        Run    = "rbxassetid://333333333",
+        Jump   = "rbxassetid://444444444",
+        Attack = "rbxassetid://555555555",
+    },
+})
+```
+
+Once you have initialised the animator, playing an animation is as simple as referencing the name you chose:
+
+```lua Playing a listed animation
+animator:play(model, "Run")
+animator:play(model, "Attack")
+```
+
+<Tip>
+  Use **PascalCase** names (`Idle`, `WalkBackward`, `SwordSlash`) to keep your
+  list consistent and easy to scan. Short, descriptive names also reduce the
+  chance of typos when you reference them later in gameplay code.
+</Tip>
+
+<Note>
+  The `List` is read once during `EZAnim.init()`. You cannot add or remove
+  animations after the animator has been created. If you need additional
+  animations mid-session, initialise a new animator instance with an updated
+  `List`.
+</Note>

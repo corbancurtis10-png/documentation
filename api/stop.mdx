@@ -1,0 +1,56 @@
+---
+title: "EZAnim:stop() — Stop a Single Animation"
+sidebarTitle: "stop()"
+description: "Stop a single named animation on a model with an optional fade-out, clear it from the current-track record, and remove it from EZAnim's internal cache."
+---
+
+`:stop()` halts a specific animation by its registered ID, applying a smooth fade-out so the character doesn't snap back to a rest pose. After stopping, EZAnim removes the track from its internal cache for that model, meaning the next call to `:play()` with the same ID will reload and re-cache a fresh `AnimationTrack`. Use this method when you need to stop one particular animation without disturbing anything else that may be playing on the same model.
+
+```lua EZAnim:stop() signature
+EZAnim:stop(Model: Model, Id: string, FadeTime: number?)
+```
+
+## Parameters
+
+<ParamField query="Model" type="Model" required>
+  The `Model` instance on which the animation should be stopped.
+</ParamField>
+
+<ParamField query="Id" type="string" required>
+  The key from the `List` table that identifies the animation to stop. If this animation is not currently loaded on the model, the call is a safe no-op.
+</ParamField>
+
+<ParamField query="FadeTime" type="number">
+  The fade-out duration in seconds. Overrides `DefaultFade` for this call only. Pass `0` for an instant cut with no blend.
+</ParamField>
+
+## Cache behavior
+
+When `:stop()` is called, EZAnim does two things beyond stopping playback:
+
+1. **Clears `_Current[Model]`** — if the stopped animation was recorded as the model's current animation, that slot is cleared.
+2. **Removes the track from `_Tracks[Model]`** — the cached `AnimationTrack` is discarded. The next `:play()` call for the same ID will call `LoadAnimation` again and store a new track. This keeps the cache from holding references to tracks that are no longer in use.
+
+## Example
+
+```lua LocalScript — stop a looped walk animation when the player lands
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Anim = require(ReplicatedStorage.AnimModule)
+
+local character = script.Parent
+local humanoid  = character:WaitForChild("Humanoid")
+
+-- Start a looped walk cycle
+Anim:play(character, "Walk", "Movement", true)
+
+-- Stop the walk with a 0.2 s fade when the character lands or idles
+humanoid.StateChanged:Connect(function(_, newState)
+    if newState == Enum.HumanoidStateType.Landed
+    or newState == Enum.HumanoidStateType.RunningNoPhysics then
+        Anim:stop(character, "Walk", 0.2)
+
+        -- Transition to idle
+        Anim:play(character, "Idle", "Idle", true)
+    end
+end)
+```

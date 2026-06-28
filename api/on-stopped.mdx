@@ -1,0 +1,59 @@
+---
+title: "EZAnim:onStopped() — React When an Animation Stops"
+sidebarTitle: "onStopped()"
+description: "Connect a callback that fires whenever an animation track stops, whether it was manually stopped via :stop() or reached its natural end."
+---
+
+`onStopped()` lets you react the moment an animation track stops playing on a model. The callback fires in both cases — when you explicitly call `:stop()` on the track and when a non-looped animation plays through to the end of its timeline. If you only want to respond to natural completion and not to manual stops, use [`onEnded()`](/api/on-ended) instead. Always store the returned `RBXScriptConnection` and call `:Disconnect()` on it when you no longer need the listener to avoid memory leaks.
+
+## Parameters
+
+<ParamField path="Model" type="Model" required>
+  The model whose loaded animation track you want to observe. This must be the
+  same model reference you passed to `:play()` when loading the track.
+</ParamField>
+
+<ParamField path="Id" type="string" required>
+  The name of the animation as registered in your EZAnim animation list. The
+  track must already be loaded on `Model` — if it is not found, the function
+  returns `nil`.
+</ParamField>
+
+<ParamField path="Callback" type="() -> ()" required>
+  The function to call when the animation track stops. Receives no arguments.
+</ParamField>
+
+## Return Value
+
+<ResponseField name="connection" type="RBXScriptConnection?">
+  An `RBXScriptConnection` you can use to disconnect the listener later. Returns
+  `nil` if no track matching `Id` is currently loaded on `Model`.
+</ResponseField>
+
+## Notes
+
+- `onStopped()` fires for **both** manual stops (`:stop()`) and natural end-of-track. If you want a callback that fires only when the animation finishes naturally — and not when stopped manually — use [`onEnded()`](/api/on-ended).
+- Always store the returned connection and call `:Disconnect()` when the listener is no longer needed. Failing to do so can cause callbacks to fire unexpectedly after the model is removed or the animation is no longer relevant.
+
+## Example
+
+The example below logs a message to the output window whenever a character's walk animation stops, then disconnects the listener automatically so it only fires once.
+
+```lua Walk Animation Stop Logger
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+EZAnim:setup({
+    Walk = "rbxassetid://123456789",
+})
+
+local character = workspace.MyCharacter
+
+EZAnim:play(character, "Walk")
+
+local connection
+connection = EZAnim:onStopped(character, "Walk", function()
+    print("Walk animation stopped on", character.Name)
+    -- Disconnect after the first stop so the callback doesn't fire again
+    connection:Disconnect()
+end)
+```

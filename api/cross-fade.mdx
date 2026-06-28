@@ -1,0 +1,74 @@
+---
+title: "EZAnim:crossFade() — Transition Between Animations"
+sidebarTitle: "crossFade()"
+description: "Smoothly transition from one named animation to another by stopping the first and starting the second with a synchronized fade time for seamless blending."
+---
+
+`:crossFade()` stops one animation and starts another in a single call, using the same `FadeTime` for both the fade-out and fade-in so the two tracks overlap symmetrically. This produces a much smoother blend than calling `:stop()` and `:play()` independently, because both transitions happen in the same frame with the same duration. It is the preferred method for any locomotion state change — walking to running, running to sprinting, or any situation where you want the outgoing and incoming animations to blend through each other rather than cutting.
+
+```lua EZAnim:crossFade() signature
+EZAnim:crossFade(
+    Model:    Model,
+    From:     string,
+    To:       string,
+    FadeTime: number?
+): AnimationTrack | nil
+```
+
+## Parameters
+
+<ParamField query="Model" type="Model" required>
+  The `Model` instance on which the transition should occur.
+</ParamField>
+
+<ParamField query="From" type="string" required>
+  The ID of the currently playing animation to fade out. If this animation is not currently playing on the model, the stop step is skipped safely and the `To` animation is still started.
+</ParamField>
+
+<ParamField query="To" type="string" required>
+  The ID of the animation to fade in. This is played at `"Movement"` priority, non-looped, using the provided `FadeTime`. Pass additional play options by following up with a direct `:play()` call if you need a different priority or looping behavior.
+</ParamField>
+
+<ParamField query="FadeTime" type="number">
+  The fade duration in seconds applied to **both** the outgoing and incoming animation. Overrides `DefaultFade` for this call only. Using the same value for both sides is what creates the smooth crossfade effect.
+</ParamField>
+
+## Return value
+
+<ResponseField name="return" type="AnimationTrack | nil">
+  The `AnimationTrack` for the `To` animation, or `nil` if the model has no `Humanoid` or `AnimationController`, or if `To` was not found in the registered animation list.
+</ResponseField>
+
+## Example
+
+```lua LocalScript — walk-to-run transition based on movement speed
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService        = game:GetService("RunService")
+local Anim = require(ReplicatedStorage.AnimModule)
+
+local character  = script.Parent
+local humanoid   = character:WaitForChild("Humanoid")
+local RUN_THRESHOLD = 14 -- studs per second
+
+local currentState = "Walk"
+Anim:play(character, "Walk", "Movement", true)
+
+RunService.Heartbeat:Connect(function()
+    local speed = humanoid.WalkSpeed
+
+    if speed >= RUN_THRESHOLD and currentState ~= "Run" then
+        -- Smoothly blend from Walk into Run
+        Anim:crossFade(character, "Walk", "Run", 0.3)
+        currentState = "Run"
+
+    elseif speed < RUN_THRESHOLD and currentState ~= "Walk" then
+        -- Smoothly blend back from Run into Walk
+        Anim:crossFade(character, "Run", "Walk", 0.3)
+        currentState = "Walk"
+    end
+end)
+```
+
+<Tip>
+  For the smoothest possible blend, use the **same `FadeTime` value on both sides** of the transition — which is exactly what `:crossFade()` does internally. If you ever replicate this pattern manually with separate `:stop()` and `:play()` calls, make sure both receive the identical fade duration. Mismatched values cause one track to finish fading before the other begins, introducing a visible "dip" in the blend.
+</Tip>

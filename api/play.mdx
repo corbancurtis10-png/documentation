@@ -1,0 +1,105 @@
+---
+title: "EZAnim:play() — Play an Animation on a Model"
+sidebarTitle: "play()"
+description: "Load, cache, and play a named animation on any Model with a Humanoid or AnimationController, with full control over priority, looping, and blending."
+---
+
+`:play()` is the primary method for starting an animation. You pass it a `Model` and one of the animation IDs you registered in `EZAnim.init()`, along with any optional overrides for priority, looping, fade time, speed, and blend weight. EZAnim loads the underlying `Animation` object and `AnimationTrack` on first use and caches both against the model, so repeated calls are lightweight.
+
+```lua EZAnim:play() signature
+EZAnim:play(
+    Model:    Model,
+    Id:       string,
+    Priority: string?,   -- "Idle"|"Movement"|"Action"|"Action2"|"Action3"|"Action4"
+    Looped:   boolean?,
+    Fade:     number?,
+    Speed:    number?,
+    Weight:   number?,
+    Layer:    string?,   -- "FullBody"|"UpperBody"|"LowerBody"|"Face"
+    Group:    string?
+): AnimationTrack | nil
+```
+
+## Parameters
+
+<ParamField query="Model" type="Model" required>
+  The Roblox `Model` instance whose `Humanoid` or `AnimationController` will play the animation. If the model has neither, `:play()` returns `nil`.
+</ParamField>
+
+<ParamField query="Id" type="string" required>
+  The key from the `List` table you provided to `EZAnim.init()`. If the key does not exist in the list, EZAnim emits a warning and returns `nil`.
+</ParamField>
+
+<ParamField query="Priority" type="string">
+  The `Enum.AnimationPriority` name to assign to the track before playing. Accepted values are `"Idle"`, `"Movement"`, `"Action"`, `"Action2"`, `"Action3"`, and `"Action4"`. Defaults to `"Movement"`.
+</ParamField>
+
+<ParamField query="Looped" type="boolean">
+  Whether the animation should loop continuously. Defaults to `false`.
+</ParamField>
+
+<ParamField query="Fade" type="number">
+  The fade-in duration in seconds. Overrides the `DefaultFade` set in `EZAnim.init()` for this call only.
+</ParamField>
+
+<ParamField query="Speed" type="number">
+  The playback speed multiplier for this call. Overrides `DefaultSpeed` for this call only. A value of `2` plays the animation at double speed.
+</ParamField>
+
+<ParamField query="Weight" type="number">
+  The blend weight for this call. Overrides `DefaultWeight` for this call only. Higher values give this track more influence when multiple tracks are blending simultaneously.
+</ParamField>
+
+<ParamField query="Layer" type="string">
+  An optional body-layer hint used for internal current-track tracking. Accepted values are `"FullBody"`, `"UpperBody"`, `"LowerBody"`, and `"Face"`. Providing this does not restrict which bones are animated — use Roblox's motor weight masks for that.
+</ParamField>
+
+<ParamField query="Group" type="string">
+  An arbitrary group name. When provided, EZAnim additionally records this track as the current animation for that group on the model, allowing you to query or replace animations per logical group (e.g., `"Locomotion"`, `"UpperBody"`).
+</ParamField>
+
+## Return value
+
+<ResponseField name="return" type="AnimationTrack | nil">
+  The playing `AnimationTrack`, or `nil` if the model has no `Humanoid` or `AnimationController`, or if `Id` was not found in the registered animation list.
+</ResponseField>
+
+## Example
+
+```lua LocalScript — looped idle, then a one-off action animation
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Anim = require(ReplicatedStorage.AnimModule) -- your shared EZAnim instance
+
+local character = script.Parent
+
+-- Play a looped idle at Movement priority
+Anim:play(character, "Idle", "Idle", true)
+
+-- Later: play a melee attack at Action priority with a faster fade
+local attackTrack = Anim:play(
+    character,
+    "Attack",
+    "Action",   -- Priority
+    false,      -- Looped
+    0.1,        -- Fade
+    1,          -- Speed
+    1,          -- Weight
+    "UpperBody",-- Layer
+    "Combat"    -- Group
+)
+
+if attackTrack then
+    attackTrack.Stopped:Once(function()
+        -- Return to idle once the attack finishes
+        Anim:play(character, "Idle", "Idle", true)
+    end)
+end
+```
+
+<Note>
+  EZAnim caches both the `Animation` instance and the `AnimationTrack` the first time you call `:play()` for a given model and ID combination. Subsequent calls reuse the cached track, avoiding redundant `LoadAnimation` calls and keeping memory usage predictable.
+</Note>
+
+<Warning>
+  If you pass an `Id` that was not registered in the `List` table during `EZAnim.init()`, `:play()` will emit a warning to the output and return `nil`. Always make sure every ID you use at runtime is present in your initialization list.
+</Warning>

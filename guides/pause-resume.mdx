@@ -1,0 +1,90 @@
+---
+title: "Pausing and Resuming Animations in EZAnim"
+sidebarTitle: "Pause & Resume"
+description: "Freeze any playing animation mid-frame with EZAnim's pause method, then restore it exactly where it left off using resume."
+---
+
+There are situations where you need to halt an animation at its exact current frame without losing your place — a cutscene interruption, a game-paused overlay, or freezing a character mid-attack while a UI menu opens. EZAnim's `:pause()` and `:resume()` methods make this trivial: pause snapshots the track's `TimePosition` and stops it instantly, while resume restores that position and resumes playback as if nothing happened.
+
+## How `:pause()` Works
+
+When you call `:pause()`, EZAnim:
+
+<Steps>
+  <Step title="Records TimePosition">
+    The current `TimePosition` of the named track is stored internally against the model.
+  </Step>
+  <Step title="Stops with zero fade">
+    The track is stopped using a `FadeTime` of `0`, so the animation cuts out instantly rather than blending away. This preserves the exact pose.
+  </Step>
+</Steps>
+
+<Note>
+  Calling `:pause()` clears the model's internal `_Current` tracker for that animation ID. `:resume()` restores it. This means any code that checks whether an animation is "currently playing" via EZAnim's internal state will correctly see the animation as not active while it is paused.
+</Note>
+
+## How `:resume()` Works
+
+`:resume()` reads the stored `TimePosition` back, calls `:play()` on the animation, and immediately sets the track's `TimePosition` to the saved value — so playback continues from the frozen frame, not from the beginning.
+
+## Full Example: Pause During UI Menu
+
+```lua LocalScript/GameController.lua
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local Anim = EZAnim.init({
+    List = {
+        Run    = "rbxassetid://123456789",
+        Attack = "rbxassetid://234567891",
+    },
+    DefaultFade = 0.15,
+})
+
+local character = game.Players.LocalPlayer.Character
+
+-- Character is mid-attack when the pause menu opens
+Anim:play(character, "Attack", Enum.AnimationPriority.Action, false)
+
+-- Simulate a slight delay before opening the menu
+task.wait(0.3)
+
+-- Freeze the attack animation at its current frame
+Anim:pause(character, "Attack")
+print("Animation paused — showing menu")
+
+-- ... the player navigates the menu ...
+task.wait(2)
+
+-- Resume from exactly where it was frozen
+Anim:resume(character, "Attack")
+print("Animation resumed")
+```
+
+## Pausing Multiple Animations
+
+You can pause and resume each animation individually. Call `:pause()` for every active track you want to freeze, then `:resume()` each one when you are ready to continue.
+
+```lua LocalScript/GameController.lua
+-- Pause both the run loop and any active combat layer
+Anim:pause(character, "Run")
+Anim:pause(character, "Attack")
+
+-- ... cutscene plays ...
+
+-- Resume in the same order
+Anim:resume(character, "Run")
+Anim:resume(character, "Attack")
+```
+
+<Tip>
+  Pause and resume are particularly well-suited to **cutscene or dialogue systems**. When a cutscene begins, pause every active character animation so the scene director has full control of poses. When the cutscene ends, resume each one to hand control back to the gameplay layer seamlessly.
+</Tip>
+
+<CardGroup cols={2}>
+  <Card title="Basic Playback" icon="play" href="/guides/basic-playback">
+    Learn the core play and stop API that pause and resume build on.
+  </Card>
+  <Card title="Events" icon="bell" href="/guides/events">
+    Use onStopped and onEnded to trigger logic when animations finish.
+  </Card>
+</CardGroup>

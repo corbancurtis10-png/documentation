@@ -1,0 +1,50 @@
+---
+title: "Animation Priorities in EZAnim"
+sidebarTitle: "Priorities"
+description: "Understand how Roblox animation priorities work and how to use EZAnim's six priority levels to control which animations override others."
+---
+
+Roblox blends animation tracks by comparing their priority levels. When two animations affect the same joint simultaneously, the one with the higher priority wins and its pose is used on that joint. EZAnim exposes all six standard Roblox priority tiers directly, so you can make precise decisions about how each animation interacts with everything else playing on a character rig.
+
+## Priority levels
+
+| Priority | Roblox Enum | Typical Use |
+|----------|-------------|-------------|
+| `Idle` | `Enum.AnimationPriority.Idle` | Background breathing, resting poses |
+| `Movement` | `Enum.AnimationPriority.Movement` | Walk, run, swim |
+| `Action` | `Enum.AnimationPriority.Action` | Combat, interactions |
+| `Action2` | `Enum.AnimationPriority.Action2` | Secondary actions |
+| `Action3` | `Enum.AnimationPriority.Action3` | Tertiary actions |
+| `Action4` | `Enum.AnimationPriority.Action4` | Highest-priority overrides |
+
+Higher tiers override lower tiers on shared joints. `Action4` sits at the top of the stack — an animation playing at `Action4` will always win over anything at `Idle`, `Movement`, or `Action`.
+
+## Passing Priority to :play()
+
+Supply the priority as a string matching one of the six tier names. EZAnim maps the string to the correct `Enum.AnimationPriority` value internally.
+
+```lua Using Priority with :play()
+-- A looping walk cycle at Movement priority
+animator:play(model, "Walk", {
+    Priority = "Movement",
+    Fade     = 0.2,
+})
+
+-- A sword swing that must override the walk
+animator:play(model, "Attack", {
+    Priority = "Action",
+    Fade     = 0.1,
+})
+
+-- A cinematic override that beats everything else
+animator:play(model, "Cutscene", {
+    Priority = "Action4",
+    Fade     = 0.3,
+})
+```
+
+<Tip>
+  Not sure which priority to use? Default to `"Movement"`. It sits above idle
+  poses but yields cleanly to action animations, making it a safe middle ground
+  for most locomotion and ambient clips.
+</Tip>

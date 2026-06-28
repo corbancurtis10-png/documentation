@@ -1,0 +1,64 @@
+---
+title: "Animation Groups and Layers in EZAnim"
+sidebarTitle: "Groups & Layers"
+description: "Learn how EZAnim's built-in layers and named groups help you track and organise which animations are playing on a model at any time."
+---
+
+EZAnim provides two complementary organisational systems — **layers** and **groups** — that let you track and manage concurrent animations on a model. Neither system restricts which joints an animation affects; that is determined by the animation's priority and the rig itself. Instead, layers and groups give you named buckets you can query and reason about in your own game logic.
+
+## Layers
+
+EZAnim defines four built-in layer slots. When you play an animation and specify a `Layer`, EZAnim records that animation as the current occupant of that layer bucket for the model:
+
+| Layer | Intended Use |
+|-------|--------------|
+| `FullBody` | Animations that drive the entire character rig |
+| `UpperBody` | Torso, arms, and head animations |
+| `LowerBody` | Hip and leg animations |
+| `Face` | Facial expressions and lip-sync clips |
+
+These labels are purely organisational. Assigning an animation to `UpperBody` does not automatically mask the lower joints — your animation asset and its priority still determine the actual blend. Use layers to keep your own code readable and to quickly identify what is playing in each region of the character.
+
+## Groups
+
+Groups let you track which animation is currently active for a logical category on a specific model. When you pass a `Group` string to `:play()`, EZAnim stores the animation name in `_CurrentByGroup[Model][Group]`. You can use any string you like as a group name — common choices are `"Legs"`, `"Torso"`, `"Combat"`, or `"Emote"`.
+
+This is especially useful when you need to know what is playing before deciding whether to interrupt it:
+
+```lua Checking the current group animation before playing
+-- If the "Combat" group is already playing Attack, do not restart it
+local current = animator:getState(model, "Combat")
+if current ~= "Attack" then
+    animator:play(model, "Attack", { Group = "Combat" })
+end
+```
+
+## Using Layer and Group together
+
+You can supply both parameters in a single `:play()` call. EZAnim will slot the animation into the specified layer bucket **and** record it as the current animation for the named group.
+
+```lua Playing with both Layer and Group
+-- Full-body idle, tracked under the "Ambient" group
+animator:play(model, "Idle", {
+    Priority = "Idle",
+    Layer    = "FullBody",
+    Group    = "Ambient",
+    Fade     = 0.3,
+})
+
+-- Upper-body reload, tracked under the "Arms" group
+animator:play(model, "Reload", {
+    Priority = "Action",
+    Layer    = "UpperBody",
+    Group    = "Arms",
+    Fade     = 0.15,
+})
+```
+
+<Note>
+  Layers and groups are **organisational tools only**. They do not restrict
+  which joints are animated — joint blending is governed by the animation's
+  `AnimationPriority` and the keyframes in the asset itself. Use these systems
+  to keep your own gameplay code clear and maintainable, not to enforce
+  physical joint masks.
+</Note>

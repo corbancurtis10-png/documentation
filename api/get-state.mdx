@@ -1,0 +1,55 @@
+---
+title: "EZAnim:getState() — Read the Current Model State"
+sidebarTitle: "getState()"
+description: "Returns the state string previously stored for a model via setState(), or nil if no state has been set yet. Use this to drive animation state machine logic."
+---
+
+`EZAnim:getState()` retrieves the string that was last written for a given `Model` via [`:setState()`](/api/set-state). If no state has ever been set for the model, it returns `nil`. Together, `setState` and `getState` form a minimal state-machine toolkit built into EZAnim — you record transitions with `setState`, then branch your animation logic with `getState`.
+
+<ParamField query="Model" type="Model" required>
+  The Roblox `Model` instance whose state string you want to read.
+</ParamField>
+
+<ResponseField name="state" type="string?">
+  The state string most recently set for the model via `:setState()`, or `nil` if no state has been set.
+</ResponseField>
+
+```lua Simple animation state machine using setState and getState
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local character = workspace.Dummy
+EZAnim:load(character, {
+    idle     = "rbxassetid://123456789",
+    walk     = "rbxassetid://234567891",
+    attacking = "rbxassetid://345678912",
+})
+
+-- Helper that safely transitions to a new animation state
+local function transitionTo(newState: string)
+    local current = EZAnim:getState(character)
+
+    -- Avoid restarting an animation that is already active
+    if current == newState then return end
+
+    -- Stop the previous animation if one was running
+    if current then
+        EZAnim:stop(character, current)
+    end
+
+    EZAnim:play(character, newState)
+    EZAnim:setState(character, newState)
+end
+
+-- Drive the state machine from game logic
+transitionTo("idle")
+
+task.wait(2)
+transitionTo("walk")
+
+task.wait(3)
+transitionTo("attacking")
+
+-- Read back the current state at any time
+local state = EZAnim:getState(character)
+print("Current animation state:", state) --> "attacking"
+```

@@ -1,0 +1,37 @@
+---
+title: "EZAnim:resume() — Resume a Paused Animation"
+sidebarTitle: "resume()"
+description: "Resumes a previously paused animation track, restoring it to the exact TimePosition saved when pause() was called, then playing with the default fade."
+---
+
+`EZAnim:resume()` picks up a paused animation exactly where it left off. It retrieves the `TimePosition` that was saved by `:pause()`, seeks the track back to that position, and then calls `Track:Play()` using the library's default fade. The paused entry is cleared and the model's current animation is updated to the resumed track.
+
+<ParamField query="Model" type="Model" required>
+  The Roblox `Model` instance that owns the animation you want to resume. Must match the model passed to the earlier `:pause()` call.
+</ParamField>
+
+<ParamField query="Id" type="string" required>
+  The string key identifying the animation track to resume. Must match the `Id` that was passed to `:pause()`.
+</ParamField>
+
+<Note>
+  `resume()` does nothing if the animation was not previously paused with [`:pause()`](/api/pause). Make sure you always call `:pause()` before `:resume()` for the same `Model` and `Id` pair.
+</Note>
+
+```lua Pause then resume an animation
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local character = workspace.Dummy
+EZAnim:load(character, {
+    run = "rbxassetid://123456789",
+})
+
+EZAnim:play(character, "run")
+
+-- Freeze the animation mid-playback
+EZAnim:pause(character, "run")
+
+-- Wait a moment, then continue from the saved position
+task.wait(2)
+EZAnim:resume(character, "run")
+```

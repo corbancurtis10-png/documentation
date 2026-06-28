@@ -1,0 +1,64 @@
+---
+title: "EZAnim:ragdoll() — Enable Ragdoll Physics on a Model"
+sidebarTitle: "ragdoll()"
+description: "Disable all Motor6D joints on a model and activate physics-based ragdoll simulation, optionally restoring the character after a set duration."
+---
+
+`ragdoll()` converts a rigged character model into a physics ragdoll by disabling every `Motor6D` joint it finds, replacing each one with a `BallSocketConstraint` so the limbs remain connected but react to gravity and collisions naturally. Before joints are disabled, all currently playing animations are stopped immediately. The `Humanoid` is placed into the `Physics` state and `PlatformStand` is enabled to prevent Roblox's default locomotion from fighting the ragdoll simulation. If you supply the optional `Duration` parameter, `unragdoll()` is called automatically after that many seconds, saving you from managing the timer yourself.
+
+## Parameters
+
+<ParamField path="Model" type="Model" required>
+  The character model to ragdoll. The model must contain a `Humanoid` instance
+  and at least one `Motor6D` joint in its descendants — typically any standard
+  Roblox R6 or R15 rig satisfies this requirement.
+</ParamField>
+
+<ParamField path="Duration" type="number">
+  Optional. The number of seconds to remain in the ragdoll state before
+  `unragdoll()` is called automatically. If omitted, the model stays ragdolled
+  until you call [`unragdoll()`](/api/unragdoll) manually.
+</ParamField>
+
+## Notes
+
+- `ragdoll()` requires a `Humanoid` in the model. If no `Humanoid` is found the call does nothing.
+- All animations are stopped (with a fade time of `0`) before the ragdoll is applied, so limbs do not snap between an animated pose and the physics simulation.
+- Internally, EZAnim saves each `Motor6D`'s `C0` and `C1` values alongside the motor reference. These are restored exactly when you call `unragdoll()`, so joint orientations return to their original state.
+- Use the `Duration` parameter for timed knockdowns (e.g. a stun or death recovery) so you do not have to wire up a `task.delay` call yourself.
+
+<Warning>
+  Do not call `ragdoll()` on the same model twice without calling `unragdoll()`
+  in between. Doing so will overwrite the saved motor data, making it impossible
+  to restore joints correctly.
+</Warning>
+
+## Example
+
+The example below connects to a character's `Humanoid.Died` event and ragdolls the character on death. The body is automatically restored to a standing state after three seconds.
+
+```lua Ragdoll on Death with Auto-Restore
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+EZAnim:setup({
+    Idle = "rbxassetid://123456789",
+    Walk = "rbxassetid://234567891",
+})
+
+local character = workspace.MyCharacter
+local humanoid  = character:FindFirstChildOfClass("Humanoid")
+
+if humanoid then
+    humanoid.Died:Connect(function()
+        -- Ragdoll immediately; restore automatically after 3 seconds
+        EZAnim:ragdoll(character, 3)
+        print(character.Name, "has died and been ragdolled.")
+    end)
+end
+```
+
+<Tip>
+  For a permanent ragdoll (e.g. a dead NPC that should never get up), omit
+  `Duration` and leave the model ragdolled indefinitely. You can still call
+  `unragdoll()` later if the design requires revival.
+</Tip>

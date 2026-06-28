@@ -1,0 +1,65 @@
+---
+title: "EZAnim.init() Configuration Options"
+sidebarTitle: "Options"
+description: "A complete reference for every field in the EZAnim options table, covering defaults for fade time, playback speed, blend weight, and auto cleanup."
+---
+
+When you call `EZAnim.init()`, you pass a single options table that configures the animator for the lifetime of that instance. Most fields are optional and fall back to sensible defaults, but the `List` field is always required. Understanding each option up front lets you tune playback behaviour globally and avoid repeating the same arguments on every `:play()` call.
+
+## Options reference
+
+<ParamField body="List" type="table" required>
+  A map of animation names to Roblox asset ID strings (`rbxassetid://...`).
+  Every animation you want to reference through the API must be declared here.
+  See [Building Your Animation List](/concepts/animation-list) for full details.
+</ParamField>
+
+<ParamField body="DefaultFade" type="number" default="0.15">
+  The fade duration (in seconds) used when blending into or out of an animation
+  and no explicit `Fade` argument is supplied to the individual method call. A
+  value of `0` produces an instant cut; higher values create smoother
+  cross-fades.
+</ParamField>
+
+<ParamField body="DefaultSpeed" type="number" default="1">
+  The playback speed multiplier applied to every animation unless overridden at
+  the call site. `1` is normal speed, `2` is double speed, `0.5` is half speed.
+</ParamField>
+
+<ParamField body="DefaultWeight" type="number" default="1">
+  The blend weight given to each animation track unless a per-call `Weight` is
+  provided. Higher weights cause an animation to contribute more strongly when
+  multiple tracks are blended together.
+</ParamField>
+
+<ParamField body="AutoCleanUp" type="boolean" default="true">
+  When `true`, EZAnim automatically disconnects all event listeners and clears
+  cached animation tracks when the associated model is destroyed. Set this to
+  `false` only if you are managing cleanup manually.
+</ParamField>
+
+## Full example
+
+```lua EZAnim.init() with all options
+local EZAnim = require(game.ReplicatedStorage.EZAnim)
+
+local animator = EZAnim.init(model, {
+    List = {
+        Idle   = "rbxassetid://111111111",
+        Walk   = "rbxassetid://222222222",
+        Run    = "rbxassetid://333333333",
+        Jump   = "rbxassetid://444444444",
+        Attack = "rbxassetid://555555555",
+    },
+    DefaultFade   = 0.2,
+    DefaultSpeed  = 1,
+    DefaultWeight = 1,
+    AutoCleanUp   = true,
+})
+```
+
+<Note>
+  Any `Fade`, `Speed`, or `Weight` argument you pass directly to a method such
+  as `:play()` overrides the corresponding default for that call only. The
+  stored defaults are not mutated.
+</Note>
