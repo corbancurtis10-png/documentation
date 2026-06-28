@@ -1,7 +1,7 @@
 ---
 title: "EZAnim:setWeight() — Adjust Animation Blend Weight"
 sidebarTitle: "setWeight()"
-description: "Sets the blend weight of a loaded animation track, controlling how much it influences the final pose. Optionally fades to the new weight over a given duration."
+description: "Sets the blend weight of a loaded animation track, controlling how much it influences the final pose. Optionally fades to the new weight over a duration."
 ---
 
 `EZAnim:setWeight()` controls how strongly an animation contributes to the final blended pose of a model. Roblox blends all playing animation tracks together; a higher `Weight` gives a track more influence over the result, while a weight of `0` makes it invisible in the blend even if it is still technically playing. You can optionally supply a `Fade` duration to smoothly transition to the new weight instead of snapping instantly.

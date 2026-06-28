@@ -24,7 +24,7 @@ description: "Disable all Motor6D joints on a model and activate physics-based r
 
 - `ragdoll()` requires a `Humanoid` in the model. If no `Humanoid` is found the call does nothing.
 - All animations are stopped (with a fade time of `0`) before the ragdoll is applied, so limbs do not snap between an animated pose and the physics simulation.
-- Internally, EZAnim saves each `Motor6D`'s `C0` and `C1` values alongside the motor reference. These are restored exactly when you call `unragdoll()`, so joint orientations return to their original state.
+- EZAnim records the original transform of each `Motor6D` before disabling it. When you call `unragdoll()`, every joint is restored to exactly the orientation it had before ragdolling.
 - Use the `Duration` parameter for timed knockdowns (e.g. a stun or death recovery) so you do not have to wire up a `task.delay` call yourself.
 
 <Warning>

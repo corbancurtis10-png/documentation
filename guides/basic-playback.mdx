@@ -1,7 +1,7 @@
 ---
-title: "Playing and Stopping Animations with EZAnim"
+title: "Playing and Stopping Animations with EZAnim in Roblox"
 sidebarTitle: "Basic Playback"
-description: "Learn how to play, stop, and fine-tune animations on any Roblox model using EZAnim's core playback API."
+description: "Learn how to play, stop, loop, and fine-tune animations on any Roblox model using EZAnim's core playback API and configured defaults."
 ---
 
 EZAnim gives you a straightforward API for loading and controlling animations on any model that has a `Humanoid` or `AnimationController`. After a one-time call to `EZAnim.init()` you can play, stop, loop, and adjust any animation in your list without ever touching the Roblox `AnimationTrack` API directly.
@@ -38,7 +38,7 @@ Pass `Looped = true` to keep an animation cycling until you explicitly stop it.
 
 ```lua ServerScript/AnimationManager.lua
 -- Play a looped idle animation at default settings
-Anim:play(character, "Idle", Enum.AnimationPriority.Idle, true)
+Anim:play(character, "Idle", "Idle", true)
 ```
 
 ### One-shot action with custom parameters
@@ -50,7 +50,7 @@ You can override fade time, speed, weight, and layer on a per-call basis. Any pa
 Anim:play(
     character,   -- Model
     "Punch",     -- Id (key from your List)
-    Enum.AnimationPriority.Action, -- Priority
+    "Action",    -- Priority
     false,       -- Looped
     0.1,         -- Fade in
     1.2,         -- Speed (20 % faster than normal)
@@ -75,7 +75,7 @@ The `Group` tag is a free-form string you can use to categorise tracks. EZAnim d
 Anim:playOnce(
     character,
     "Hit",
-    Enum.AnimationPriority.Action,
+    "Action",
     false,
     0.05
 )

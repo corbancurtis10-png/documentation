@@ -1,10 +1,10 @@
 ---
-title: "EZAnim:unragdoll() — Restore a Ragdolled Model"
+title: "EZAnim:unragdoll() — Restore a Ragdolled Character"
 sidebarTitle: "unragdoll()"
-description: "Re-enable Motor6D joints, remove ragdoll constraints, and return the Humanoid to a standing state after a ragdoll() call."
+description: "Re-enable Motor6D joints, remove ragdoll physics constraints, and return the Humanoid to a standing state after a prior ragdoll() call."
 ---
 
-`unragdoll()` reverses everything that [`ragdoll()`](/api/ragdoll) did to a model. It restores the saved `C0` and `C1` values on every `Motor6D`, re-enables those joints so the animator regains control of the rig, and then destroys all `BallSocketConstraint` and `Attachment` instances that were added during ragdolling. Finally, it restores the `Humanoid` to a functional standing state by setting `PlatformStand` to `false`, `AutoRotate` to `true`, and transitioning the `Humanoid` into the `GettingUp` state so the character smoothly returns to locomotion. If `ragdoll()` was never called on the given model, `unragdoll()` does nothing.
+`unragdoll()` reverses everything that [`ragdoll()`](/api/ragdoll) did to a model. It restores every `Motor6D` to the orientation it had before ragdolling, re-enables those joints so the animator regains control of the rig, and then destroys all `BallSocketConstraint` and `Attachment` instances that were added during ragdolling. Finally, it restores the `Humanoid` to a functional standing state by setting `PlatformStand` to `false`, `AutoRotate` to `true`, and transitioning the `Humanoid` into the `GettingUp` state so the character smoothly returns to locomotion. If `ragdoll()` was never called on the given model, `unragdoll()` does nothing.
 
 ## Parameters
 
@@ -18,10 +18,10 @@ description: "Re-enable Motor6D joints, remove ragdoll constraints, and return t
 
 When `unragdoll()` runs, it performs the following steps in order:
 
-1. **Motor6D joints** — The original `C0` and `C1` values saved by `ragdoll()` are written back to each motor, and `Motor.Enabled` is set to `true`.
+1. **Motor6D joints** — Each joint's original transform, recorded before it was disabled by `ragdoll()`, is restored and the motor is re-enabled so the animator regains full control.
 2. **Physics constraints** — Every `BallSocketConstraint` and `Attachment` that was created by `ragdoll()` is destroyed, removing all collision geometry added for the ragdoll simulation.
 3. **Humanoid state** — `Humanoid.PlatformStand` is set to `false`, `Humanoid.AutoRotate` is set to `true`, and `Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)` is called so the character stands back up naturally.
-4. **Internal data** — The ragdoll entry for this model is cleared from EZAnim's internal store.
+4. **State cleanup** — All ragdoll tracking for this model is cleared, so subsequent calls to `unragdoll()` on the same model become safe no-ops.
 
 ## Notes
 

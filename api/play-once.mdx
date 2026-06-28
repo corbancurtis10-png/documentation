@@ -1,7 +1,7 @@
 ---
-title: "EZAnim:playOnce() — Play Animation from Start"
+title: "EZAnim:playOnce() — Play an Animation from Frame Zero"
 sidebarTitle: "playOnce()"
-description: "Play a named animation from the very beginning every time, ideal for hit reactions, ability casts, and one-shot animations that must never resume mid-way."
+description: "Play a named animation from frame zero every time, ideal for hit reactions, ability casts, and one-shot clips that must not resume from a cached position."
 ---
 
 `:playOnce()` behaves identically to `:play()` with one important difference: immediately after starting the track it resets `Track.TimePosition` to `0`, guaranteeing the animation always plays from its first frame regardless of any cached playback position. This makes it the right choice whenever you need a guaranteed full playthrough — hit reactions, ability activations, cutscene triggers, or any one-shot animation where resuming from a previous position would look wrong.
@@ -51,11 +51,11 @@ EZAnim:playOnce(
 </ParamField>
 
 <ParamField query="Layer" type="string">
-  An optional body-layer hint for internal current-track tracking. Accepted values are `"FullBody"`, `"UpperBody"`, `"LowerBody"`, and `"Face"`.
+  An optional body-layer hint that lets EZAnim track which animation is currently active for a given body region. Accepted values are `"FullBody"`, `"UpperBody"`, `"LowerBody"`, and `"Face"`.
 </ParamField>
 
 <ParamField query="Group" type="string">
-  An arbitrary group name for per-group current-track tracking.
+  An arbitrary group name. When provided, EZAnim records this track as the current animation for that group on the model, making it easy to manage animations by logical category (e.g., `"Locomotion"`, `"Combat"`).
 </ParamField>
 
 ## Return value

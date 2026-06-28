@@ -1,7 +1,7 @@
 ---
 title: "EZAnim:getState() — Read the Current Model State"
 sidebarTitle: "getState()"
-description: "Returns the state string previously stored for a model via setState(), or nil if no state has been set yet. Use this to drive animation state machine logic."
+description: "Returns the state string previously stored for a model via setState(), or nil if no state has been set. Use this to drive animation state machine logic."
 ---
 
 `EZAnim:getState()` retrieves the string that was last written for a given `Model` via [`:setState()`](/api/set-state). If no state has ever been set for the model, it returns `nil`. Together, `setState` and `getState` form a minimal state-machine toolkit built into EZAnim — you record transitions with `setState`, then branch your animation logic with `getState`.

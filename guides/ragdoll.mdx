@@ -1,7 +1,7 @@
 ---
-title: "Ragdoll Physics with EZAnim"
+title: "Ragdoll Physics for Roblox Characters Using EZAnim"
 sidebarTitle: "Ragdoll"
-description: "Enable full ragdoll physics on any Humanoid model with EZAnim, then restore the character with a single unragdoll call."
+description: "Enable full ragdoll physics on any Humanoid model with EZAnim in one call, then restore the character to normal gameplay with a single unragdoll call."
 ---
 
 EZAnim includes a built-in ragdoll system that converts a live, animated character into a physically simulated ragdoll in a single call. It stops all animations, disables every `Motor6D` joint, replaces them with `BallSocketConstraint` physics joints, and drops the `Humanoid` into the `Physics` state — all without you having to touch any of the underlying instances yourself. When you are ready to revive the character, `:unragdoll()` undoes every change and returns the model to normal gameplay.
@@ -91,7 +91,7 @@ local function reviveCharacter()
     Anim:unragdoll(character)
     -- Once GettingUp completes, resume normal gameplay animations
     task.wait(1.2)
-    Anim:play(character, "Idle", Enum.AnimationPriority.Idle, true)
+    Anim:play(character, "Idle", "Idle", true)
     print("Character revived.")
 end
 ```

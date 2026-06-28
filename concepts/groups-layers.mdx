@@ -1,7 +1,7 @@
 ---
-title: "Animation Groups and Layers in EZAnim"
+title: "EZAnim Groups and Layers: Organising Concurrent Animations"
 sidebarTitle: "Groups & Layers"
-description: "Learn how EZAnim's built-in layers and named groups help you track and organise which animations are playing on a model at any time."
+description: "Use EZAnim's built-in layer slots and named group strings to track and organise which animations are currently playing on each model."
 ---
 
 EZAnim provides two complementary organisational systems — **layers** and **groups** — that let you track and manage concurrent animations on a model. Neither system restricts which joints an animation affects; that is determined by the animation's priority and the rig itself. Instead, layers and groups give you named buckets you can query and reason about in your own game logic.
@@ -21,7 +21,7 @@ These labels are purely organisational. Assigning an animation to `UpperBody` do
 
 ## Groups
 
-Groups let you track which animation is currently active for a logical category on a specific model. When you pass a `Group` string to `:play()`, EZAnim stores the animation name in `_CurrentByGroup[Model][Group]`. You can use any string you like as a group name — common choices are `"Legs"`, `"Torso"`, `"Combat"`, or `"Emote"`.
+Groups let you track which animation is currently active for a logical category on a specific model. When you pass a `Group` string to `:play()`, EZAnim internally records that animation as the current one for that group on the given model. You can use any string you like as a group name — common choices are `"Legs"`, `"Torso"`, `"Combat"`, or `"Emote"`.
 
 This is especially useful when you need to know what is playing before deciding whether to interrupt it:
 

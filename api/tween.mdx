@@ -1,7 +1,7 @@
 ---
 title: "EZAnim:tween() — Smoothly Adjust Speed and Weight"
 sidebarTitle: "tween()"
-description: "Smoothly interpolates an animation track's speed and weight to target values over a given duration using 10 steps, running asynchronously in the background."
+description: "Smoothly interpolates an animation track's speed and weight to target values over a set duration using 10 steps, running asynchronously in the background."
 ---
 
 `EZAnim:tween()` animates transitions in playback speed and blend weight without blocking your code. It spawns a background coroutine via `task.spawn` that performs **10 linear interpolation steps** over the specified `Time` duration (defaulting to `0.2` seconds). You can supply a `TargetSpeed`, a `TargetWeight`, or both — any parameter you omit is left unchanged. This is the preferred way to gracefully fade out an animation or smoothly ramp up speed.

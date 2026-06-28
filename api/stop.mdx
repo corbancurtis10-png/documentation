@@ -1,7 +1,7 @@
 ---
-title: "EZAnim:stop() — Stop a Single Animation"
+title: "EZAnim:stop() — Stop and Remove a Single Animation"
 sidebarTitle: "stop()"
-description: "Stop a single named animation on a model with an optional fade-out, clear it from the current-track record, and remove it from EZAnim's internal cache."
+description: "Stop a single named animation on a model with an optional fade-out and remove its cached track so the next play call reloads it fresh."
 ---
 
 `:stop()` halts a specific animation by its registered ID, applying a smooth fade-out so the character doesn't snap back to a rest pose. After stopping, EZAnim removes the track from its internal cache for that model, meaning the next call to `:play()` with the same ID will reload and re-cache a fresh `AnimationTrack`. Use this method when you need to stop one particular animation without disturbing anything else that may be playing on the same model.
@@ -28,8 +28,8 @@ EZAnim:stop(Model: Model, Id: string, FadeTime: number?)
 
 When `:stop()` is called, EZAnim does two things beyond stopping playback:
 
-1. **Clears `_Current[Model]`** — if the stopped animation was recorded as the model's current animation, that slot is cleared.
-2. **Removes the track from `_Tracks[Model]`** — the cached `AnimationTrack` is discarded. The next `:play()` call for the same ID will call `LoadAnimation` again and store a new track. This keeps the cache from holding references to tracks that are no longer in use.
+1. **Clears the current-animation record** — if the stopped animation was recorded as the model's active animation, that record is cleared so nothing stale is reported as current.
+2. **Evicts the cached track** — the cached `AnimationTrack` is discarded. The next `:play()` call for the same ID will call `LoadAnimation` again and store a fresh track. This prevents the cache from holding references to tracks that are no longer in use.
 
 ## Example
 

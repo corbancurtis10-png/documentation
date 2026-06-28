@@ -1,5 +1,5 @@
 ---
-title: "EZAnim:play() — Play an Animation on a Model"
+title: "EZAnim:play() — Play a Named Animation on Any Model"
 sidebarTitle: "play()"
 description: "Load, cache, and play a named animation on any Model with a Humanoid or AnimationController, with full control over priority, looping, and blending."
 ---
@@ -51,7 +51,7 @@ EZAnim:play(
 </ParamField>
 
 <ParamField query="Layer" type="string">
-  An optional body-layer hint used for internal current-track tracking. Accepted values are `"FullBody"`, `"UpperBody"`, `"LowerBody"`, and `"Face"`. Providing this does not restrict which bones are animated — use Roblox's motor weight masks for that.
+  An optional body-layer hint that lets EZAnim track which animation is currently active for a given body region. Accepted values are `"FullBody"`, `"UpperBody"`, `"LowerBody"`, and `"Face"`. Providing this does not restrict which bones are animated — use Roblox's motor weight masks for that.
 </ParamField>
 
 <ParamField query="Group" type="string">

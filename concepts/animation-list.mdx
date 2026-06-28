@@ -1,7 +1,7 @@
 ---
-title: "Building Your Animation List in EZAnim"
+title: "EZAnim Animation List: Registering Names and Asset IDs"
 sidebarTitle: "Animation List"
-description: "Learn how to define the List field — a name-to-asset-ID map that tells EZAnim which animations are available and how to play them."
+description: "How to define the EZAnim List field — a name-to-asset-ID map that registers every animation your instance needs to play or reference."
 ---
 
 The `List` field is the foundation of every EZAnim setup. It is a plain Luau table that maps human-readable string names to Roblox animation asset IDs. Every animation you want to play, stop, or reference through the library must appear in this table before you call `EZAnim.init()`. Think of it as a registry: the names you define here become the identifiers you use everywhere else in the API.

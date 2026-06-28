@@ -1,7 +1,7 @@
 ---
-title: "Animation Events and Callbacks in EZAnim"
+title: "Animation Events and Callbacks in EZAnim for Roblox"
 sidebarTitle: "Events"
-description: "Hook into animation lifecycle events with EZAnim's onStopped, onEnded, and onMarker callbacks to drive reactive game logic."
+description: "Hook into animation lifecycle events with EZAnim's onStopped, onEnded, and onMarker callbacks to drive reactive game logic without manual track wiring."
 ---
 
 EZAnim exposes three event hooks that let you run code in response to things happening inside a playing animation track. Rather than reaching into the `AnimationTrack` object yourself, you pass a callback to `:onStopped()`, `:onEnded()`, or `:onMarker()` and EZAnim wires up the underlying `RBXScriptConnection` for you. Every method returns that connection so you can disconnect it whenever your listener is no longer needed.
@@ -31,7 +31,7 @@ local Anim = EZAnim.init({
 local character = game.Players.LocalPlayer.Character
 
 -- Start the walk animation
-Anim:play(character, "Walk", Enum.AnimationPriority.Movement, true)
+Anim:play(character, "Walk", "Movement", true)
 
 -- Log every time the walk track stops
 local walkStoppedConn = Anim:onStopped(character, "Walk", function()
@@ -64,11 +64,11 @@ local Anim = EZAnim.init({
 local character = game.Players.LocalPlayer.Character
 
 -- Play the attack, then automatically restore idle when it fully ends
-Anim:play(character, "Attack", Enum.AnimationPriority.Action, false)
+Anim:play(character, "Attack", "Action", false)
 
 local attackEndedConn = Anim:onEnded(character, "Attack", function()
     -- Attack animation has played all the way through
-    Anim:play(character, "Idle", Enum.AnimationPriority.Idle, true)
+    Anim:play(character, "Idle", "Idle", true)
     print("Attack ended — returning to idle.")
 end)
 
@@ -83,7 +83,7 @@ end
 `:onMarker()` fires when the playhead hits a named animation marker that you placed inside the **Roblox Animation Editor**. This is the cleanest way to synchronise game effects — sounds, particles, hitbox activation — to specific moments in an animation without hardcoding time offsets.
 
 ```lua LocalScript/FootstepController.lua
-local EZAnim  = require(game.ReplicatedStorage.EZAnim)
+local EZAnim     = require(game.ReplicatedStorage.EZAnim)
 local SoundService = game:GetService("SoundService")
 
 local Anim = EZAnim.init({
@@ -96,7 +96,7 @@ local Anim = EZAnim.init({
 local character = game.Players.LocalPlayer.Character
 
 -- Play the walk animation (it has "Footstep" markers on each step)
-Anim:play(character, "Walk", Enum.AnimationPriority.Movement, true)
+Anim:play(character, "Walk", "Movement", true)
 
 -- Fire a footstep sound every time the "Footstep" marker is hit
 local footstepConn = Anim:onMarker(character, "Walk", "Footstep", function()

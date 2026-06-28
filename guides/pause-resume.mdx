@@ -1,7 +1,7 @@
 ---
-title: "Pausing and Resuming Animations in EZAnim"
+title: "Pausing and Resuming Animations in EZAnim for Roblox"
 sidebarTitle: "Pause & Resume"
-description: "Freeze any playing animation mid-frame with EZAnim's pause method, then restore it exactly where it left off using resume."
+description: "Freeze any playing animation mid-frame with EZAnim's pause, then restore it exactly where it left off using resume — ideal for menus and cutscenes."
 ---
 
 There are situations where you need to halt an animation at its exact current frame without losing your place — a cutscene interruption, a game-paused overlay, or freezing a character mid-attack while a UI menu opens. EZAnim's `:pause()` and `:resume()` methods make this trivial: pause snapshots the track's `TimePosition` and stops it instantly, while resume restores that position and resumes playback as if nothing happened.
@@ -20,7 +20,7 @@ When you call `:pause()`, EZAnim:
 </Steps>
 
 <Note>
-  Calling `:pause()` clears the model's internal `_Current` tracker for that animation ID. `:resume()` restores it. This means any code that checks whether an animation is "currently playing" via EZAnim's internal state will correctly see the animation as not active while it is paused.
+  While an animation is paused, EZAnim treats it as not currently playing. Any code that checks whether the animation is active will correctly observe it as inactive until `:resume()` is called.
 </Note>
 
 ## How `:resume()` Works
@@ -43,7 +43,7 @@ local Anim = EZAnim.init({
 local character = game.Players.LocalPlayer.Character
 
 -- Character is mid-attack when the pause menu opens
-Anim:play(character, "Attack", Enum.AnimationPriority.Action, false)
+Anim:play(character, "Attack", "Action", false)
 
 -- Simulate a slight delay before opening the menu
 task.wait(0.3)

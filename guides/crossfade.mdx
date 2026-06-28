@@ -1,7 +1,7 @@
 ---
-title: "Cross-Fading Between Animations in EZAnim"
+title: "Cross-Fading Between Animations in EZAnim for Roblox"
 sidebarTitle: "Cross-Fade"
-description: "Smoothly transition from one playing animation to another using EZAnim's crossFade method for polished, seamless blending."
+description: "Smoothly transition from one playing animation to another using EZAnim's crossFade method for polished, seamless blending between locomotion states."
 ---
 
 When you need to move cleanly from one animation to another — such as transitioning a character from walking to running — simply calling `:play()` on the new animation can leave two tracks blending in an uncontrolled way. EZAnim's `:crossFade()` method solves this by stopping the outgoing animation with a timed fade while simultaneously starting the incoming one, giving you a smooth, intentional blend with a single call.
@@ -36,7 +36,7 @@ local Anim = EZAnim.init({
 local character = game.Players.LocalPlayer.Character
 
 -- Start walking
-Anim:play(character, "Walk", Enum.AnimationPriority.Movement, true)
+Anim:play(character, "Walk", "Movement", true)
 
 -- Later, the player starts sprinting — cross-fade into Run over 0.3 s
 Anim:crossFade(character, "Walk", "Run", 0.3)
@@ -55,9 +55,9 @@ Cross-fading pairs naturally with a simple state machine pattern. Keep track of 
 ```lua ServerScript/MovementController.lua
 local Anim = EZAnim.init({
     List = {
-        Idle  = "rbxassetid://123456789",
-        Walk  = "rbxassetid://234567891",
-        Run   = "rbxassetid://345678912",
+        Idle   = "rbxassetid://123456789",
+        Walk   = "rbxassetid://234567891",
+        Run    = "rbxassetid://345678912",
         Sprint = "rbxassetid://456789123",
     },
     DefaultFade  = 0.2,
@@ -68,7 +68,7 @@ local character   = game.Players.LocalPlayer.Character
 local currentAnim = "Idle"
 
 -- Start with the idle loop
-Anim:play(character, "Idle", Enum.AnimationPriority.Movement, true)
+Anim:play(character, "Idle", "Movement", true)
 
 local function setMovementState(newState: string)
     if newState == currentAnim then return end

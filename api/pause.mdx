@@ -1,7 +1,7 @@
 ---
-title: "EZAnim:pause() — Pause an Animation Track"
+title: "EZAnim:pause() — Instantly Pause an Animation Track"
 sidebarTitle: "pause()"
-description: "Instantly stops a playing animation track and saves its TimePosition so you can resume it later from exactly where it left off."
+description: "Instantly stops a playing animation track with no blend-out and saves its TimePosition, letting you resume from exactly where it paused."
 ---
 
 Pausing an animation with `EZAnim:pause()` performs an **instant stop** (fade of `0`) and stores the track's current `TimePosition` internally. This means the animation freezes in place without any blend-out transition. You can then call `:resume()` at any time to pick up from that same position.

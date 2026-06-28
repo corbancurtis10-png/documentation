@@ -1,10 +1,10 @@
 ---
-title: "EZAnim:stopAll() — Stop All Animations on a Model"
+title: "EZAnim:stopAll() — Stop All of a Model's Animations"
 sidebarTitle: "stopAll()"
-description: "Stop every active animation on a model at once, then wipe all of EZAnim's internal track, current, paused, and group state for that model."
+description: "Stop every active animation on a model at once and fully reset all EZAnim tracking state, including per-group and cached track records, for that model."
 ---
 
-`:stopAll()` is a hard reset for a model's entire animation state. It iterates every track EZAnim has loaded for the model, stops any that are still playing, and then clears all associated internal state — cached tracks, the current-animation record, paused-track records, and per-group current-track records. Use it in situations where you need a guaranteed clean slate: character death, respawn sequences, cutscene transitions, or any moment where the previous animation state is no longer meaningful.
+`:stopAll()` is a hard reset for a model's entire animation state. It iterates every track EZAnim has loaded for the model, stops any that are still playing, and then clears all associated tracking state — cached tracks, the current-animation record, paused-track records, and per-group current-track records. Use it in situations where you need a guaranteed clean slate: character death, respawn sequences, cutscene transitions, or any moment where the previous animation state is no longer meaningful.
 
 ```lua EZAnim:stopAll() signature
 EZAnim:stopAll(Model: Model, FadeTime: number?)
@@ -22,14 +22,14 @@ EZAnim:stopAll(Model: Model, FadeTime: number?)
 
 ## What gets cleared
 
-After `:stopAll()` returns, EZAnim's internal tables for the given model are fully reset:
+After `:stopAll()` returns, all EZAnim state for the given model is fully reset:
 
-| Table | Purpose | Cleared |
+| State | Purpose | Cleared |
 |---|---|---|
-| `_Tracks[Model]` | Cached `AnimationTrack` objects | ✓ |
-| `_Current[Model]` | The model's current animation ID | ✓ |
-| `_Paused[Model]` | Any paused track references | ✓ |
-| `_CurrentByGroup[Model]` | Per-group current animation IDs | ✓ |
+| Track cache | Cached `AnimationTrack` objects for each animation ID | ✓ |
+| Current-animation record | Which animation is currently active on the model | ✓ |
+| Paused-track record | Any tracks that were paused rather than stopped | ✓ |
+| Per-group current record | Which animation is currently active per logical group | ✓ |
 
 Because the track cache is wiped, the next call to `:play()` on this model will reload and re-cache tracks from scratch, exactly as if the model had just been initialized.
 

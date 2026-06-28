@@ -1,5 +1,5 @@
 ---
-title: "Animation Priorities in EZAnim"
+title: "Animation Priorities in EZAnim: Controlling Playback Order"
 sidebarTitle: "Priorities"
 description: "Understand how Roblox animation priorities work and how to use EZAnim's six priority levels to control which animations override others."
 ---
@@ -48,3 +48,9 @@ animator:play(model, "Cutscene", {
   poses but yields cleanly to action animations, making it a safe middle ground
   for most locomotion and ambient clips.
 </Tip>
+
+<Note>
+  If you omit the `Priority` argument or pass an unrecognised string, EZAnim
+  defaults to `"Movement"`. It is always best to be explicit, but the fallback
+  ensures your animations still play rather than erroring silently.
+</Note>

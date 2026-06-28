@@ -1,10 +1,10 @@
 ---
-title: "EZAnim:preload() — Cache Animations Before Use"
+title: "EZAnim:preload() — Pre-Cache Animations for Playback"
 sidebarTitle: "preload()"
-description: "Pre-create Animation instances for a list of animation IDs so that the first call to :play() on each one is immediate and hitch-free."
+description: "Pre-create Animation instances for a list of animation IDs so the first :play() call on each one is immediate, with no per-frame hitch."
 ---
 
-`preload()` walks through a list of animation names and creates the underlying `Animation` instances for each one, storing them in EZAnim's internal cache. Because these instances are created ahead of time, the first call to `:play()` for a preloaded animation does not need to build the instance on the spot, eliminating the small hitch that would otherwise occur. Preloading only creates `Animation` instances — it does not load tracks onto any model. Tracks are still loaded lazily on the first `:play()` call. Call `preload()` during a loading screen or at game startup, before any characters are spawned, to get the smoothest experience.
+`preload()` walks through a list of animation names and creates the underlying `Animation` instances for each one, storing them so they are ready before any character is spawned. Because these instances are created ahead of time, the first call to `:play()` for a preloaded animation does not need to build the instance on the spot, eliminating the small hitch that would otherwise occur. Preloading only creates `Animation` instances — it does not load tracks onto any model. Tracks are still loaded lazily on the first `:play()` call. Call `preload()` during a loading screen or at game startup, before any characters are spawned, to get the smoothest experience.
 
 ## Parameters
 

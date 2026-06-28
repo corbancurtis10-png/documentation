@@ -1,7 +1,7 @@
 ---
-title: "Queueing Sequential Animations in EZAnim"
+title: "Queueing Sequential Animations in EZAnim for Roblox"
 sidebarTitle: "Queue"
-description: "Play a series of animations back-to-back on a model using EZAnim's built-in queue system — no manual event wiring required."
+description: "Play a series of animations back-to-back on a Roblox model using EZAnim's built-in queue system — no manual event wiring or callbacks required."
 ---
 
 Sometimes you need several animations to play in strict sequence — a three-hit combo, a multi-stage emote, or a cutscene movement chain. EZAnim's `:queue()` method handles this for you automatically: it plays each animation in the list and waits for the previous track's `Stopped` event before moving to the next one, so you never have to wire up chained callbacks yourself.
@@ -25,7 +25,7 @@ When you call `:queue()`, EZAnim iterates through the `AnimationList` you provid
 The queue is **per-model** and clears itself as soon as the last animation in the list finishes. There is no persistent queue object — each `:queue()` call is self-contained.
 
 <Note>
-  All animations dispatched by `:queue()` run at `Enum.AnimationPriority.Action` priority. If you need a different priority you should wire the sequence yourself using `:onStopped()` callbacks instead.
+  All animations dispatched by `:queue()` run at `"Action"` priority. If you need a different priority you should wire the sequence yourself using `:onStopped()` callbacks instead.
 </Note>
 
 ## Full Example: Three-Hit Combo
@@ -35,10 +35,10 @@ local EZAnim = require(game.ReplicatedStorage.EZAnim)
 
 local Anim = EZAnim.init({
     List = {
-        Punch1 = "rbxassetid://123456789",
-        Punch2 = "rbxassetid://234567891",
+        Punch1   = "rbxassetid://123456789",
+        Punch2   = "rbxassetid://234567891",
         Finisher = "rbxassetid://345678912",
-        Idle   = "rbxassetid://456789123",
+        Idle     = "rbxassetid://456789123",
     },
     DefaultFade  = 0.1,
     DefaultSpeed = 1,
@@ -73,7 +73,7 @@ Anim:queue(character, { "Punch1", "Punch2", "Finisher" }, 0.1, 1.1, 1)
 -- The queue runs synchronously in a coroutine or task.spawn context.
 -- After it finishes, clear the state.
 Anim:setState(character, "Idle")
-Anim:play(character, "Idle", Enum.AnimationPriority.Idle, true)
+Anim:play(character, "Idle", "Idle", true)
 ```
 
 You can read the state back at any time with `:getState()`:

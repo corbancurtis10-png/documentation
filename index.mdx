@@ -1,7 +1,7 @@
 ---
-title: "EZAnim: Simple Roblox Animation Management"
+title: "EZAnim: Roblox Luau Animation Management Made Simple"
 sidebarTitle: "Home"
-description: "EZAnim is a Luau library for Roblox that makes loading, playing, and managing character animations fast and effortless."
+description: "EZAnim is a Luau library for Roblox that eliminates animation boilerplate — load, play, queue, cross-fade, and clean up tracks with one unified API."
 ---
 
 EZAnim is a lightweight Luau module for Roblox that handles all the boilerplate of animation management — loading tracks, controlling playback, queuing sequences, and cleaning up after models. Instead of wiring up Animators and Animation instances by hand, you describe your animations once and let EZAnim do the rest.
@@ -61,8 +61,8 @@ local Anim = EZAnim.init({
     DefaultSpeed = 1,
 })
 
--- Play the Idle animation on a character model
-Anim:play(character, "Idle", "Idle", true)
+-- Play the Idle animation on a character model (looped, default priority)
+Anim:play(character, "Idle", nil, true)
 ```
 
 <Steps>
